@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class EntriesHistory(name: String, isAuthorized: Boolean) {
+class EntriesHistory(
+    name: String,
+    isAuthorized: Boolean) {
     private val nameEntry = name
     private val authorizedOrNot = if (isAuthorized) {
         "Authorized"

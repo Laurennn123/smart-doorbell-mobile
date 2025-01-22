@@ -15,15 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mobileapp.R
-import com.example.mobileapp.data.DataSource.settings
 import com.example.mobileapp.model.Settings
 
 @Composable
 fun SettingsScreen(
     settings: List<Settings>,
+    onClick: (String) -> Unit,
     modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
@@ -33,9 +32,10 @@ fun SettingsScreen(
             style = MaterialTheme.typography.displayLarge
         )
         settings.forEach { option ->
+            val title = stringResource(option.title)
             SettingsSelectButton(
                 settings = option,
-                onClick = {},
+                onClick = { onClick(title) },
                 modifier = Modifier
                     .padding(vertical = dimensionResource(R.dimen.padding_small))
             )
@@ -44,7 +44,7 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsSelectButton(
+private fun SettingsSelectButton(
     settings: Settings,
     onClick: () -> Unit,
     modifier: Modifier = Modifier) {
@@ -73,17 +73,5 @@ fun SettingsSelectButton(
                 style = MaterialTheme.typography.labelLarge
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun Test() {
-    MaterialTheme{
-        SettingsScreen(
-            settings = settings,
-            modifier = Modifier
-                .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-        )
     }
 }

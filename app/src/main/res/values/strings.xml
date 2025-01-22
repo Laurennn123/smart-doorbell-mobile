@@ -7,6 +7,23 @@
     <string name="general_settings">General Settings</string>
     <string name="about_us">About Us</string>
     <string name="logout">Log Out</string>
-
+    <string name="user_name">Welcome back, %1$s</string>
+    <string name="front_door">Check your frontdoor!</string>
     <string name="home_screen">Home</string>
+    <string name="arrow_back">Arrow Back</string>
+    <string name="user_account">User Account</string>
+    <string name="menu">Menu</string>
+    <string name="recent_notification">Recent Notification</string>
+    <string name="someone_on_frontdoor">Someone is at your frontdoor!</string>
+    <string name="actions">Actions</string>
+    <string name="unlock_door">Unlock Door</string>
+    <string name="alarm_trigger">Alarm Trigger</string>
+    <string name="clear">Clear</string>
+    <string name="enter">Enter</string>
+    <string name="message_panel">Message Panel</string>
+    <string name="enter_message">Enter a message</string>
+    <string name="recent_visitor">Recent Visitors</string>
+    <string name="authorized">Authorized</string>
+    <string name="camera">Camera</string>
+    <string name="live_view">Live View</string>
 </resources>

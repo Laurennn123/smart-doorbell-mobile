@@ -29,6 +29,11 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp
     ),
+    displaySmall = TextStyle(
+        fontFamily = Quicksand,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp
+    ),
 
     labelLarge = TextStyle(
         fontFamily = NotoSerif,

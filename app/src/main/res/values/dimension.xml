@@ -3,6 +3,8 @@
 <resources>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_medium">16dp</dimen>
+    <dimen name="padding_extra_small_medium">24dp</dimen>
+    <dimen name="padding_extra_medium">36dp</dimen>
     <dimen name="padding_large">64dp</dimen>
     <dimen name="thickness_divider">1dp</dimen>
 </resources>

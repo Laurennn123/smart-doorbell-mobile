@@ -26,4 +26,7 @@
     <string name="authorized">Authorized</string>
     <string name="camera">Camera</string>
     <string name="live_view">Live View</string>
+    <string name="all_authorized_person">All Authorized Person</string>
+    <string name="add_new_authorized_person">Add New Authorized Person</string>
+    <string name="view_authorized_list">View Authorized List</string>
 </resources>

@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.camera.view)
-
+    implementation(libs.androidx.material.icons.extended)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

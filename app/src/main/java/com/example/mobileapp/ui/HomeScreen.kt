@@ -1,6 +1,5 @@
 package com.example.mobileapp.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,8 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -21,28 +22,40 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
+import com.example.mobileapp.model.HomeScreenModel
+import com.example.mobileapp.ui.components.IconAppBar
+import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.theme.MobileAppTheme
 
 @Composable
 fun HomeScreen(
     onClick: () -> Unit,
+    tryClick: () -> Unit,
+    homeViewModel: HomeScreenModel = viewModel(),
     modifier: Modifier = Modifier) {
+    val homeUiState by homeViewModel.uiState.collectAsState()
+
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = modifier,
     ) {
+        IconAppBar(
+            icon = Icons.Filled.Check,
+            onClick = tryClick,
+            contentDescription = "Try"
+        )
         RecentNotification(
             onClick = onClick,
             modifier = Modifier
@@ -54,10 +67,29 @@ fun HomeScreen(
             .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
             .height(120.dp))
         Actions(
-            onClickAlarm = {},
+            onClickAlarm = {
+                // example that it should automated
+                val index = homeViewModel.index
+                homeUiState.listOfRecentVisitors.add(
+                    { VisitorCard("borils${index}", true,modifier = Modifier.padding(start = 10.dp)) }
+                )
+                homeViewModel.index++
+            },
             onClickDoor = {}
         )
-        RecentVisitors(modifier = Modifier.padding(vertical = 8.dp))
+        MessagePanel(
+            messageValue = homeViewModel.userMessage,
+            userMessage = { homeViewModel.updateMessage(it) },
+            onClickClear = { homeViewModel.clearMessage() },
+            onClickEnter = { },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
+        )
+        RecentVisitors(
+            listOfUsers = homeUiState.listOfRecentVisitors,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
     }
 }
 
@@ -136,15 +168,15 @@ private fun Actions(
         shape = MaterialTheme.shapes.extraLarge
     )
     Spacer(modifier = Modifier.height(12.dp))
-    MessagePanel(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
-    )
 }
 
 @Composable
-private fun MessagePanel(modifier: Modifier = Modifier) {
+private fun MessagePanel(
+    messageValue: String,
+    userMessage: (String) -> Unit,
+    onClickClear: () -> Unit,
+    onClickEnter: () -> Unit,
+    modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
@@ -155,8 +187,8 @@ private fun MessagePanel(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
             )
         TextField(
-            value = "",
-            onValueChange = { },
+            value = messageValue,
+            onValueChange = userMessage,
             label = { Text(stringResource(id = R.string.enter_message)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -166,7 +198,7 @@ private fun MessagePanel(modifier: Modifier = Modifier) {
                     horizontal = dimensionResource(R.dimen.padding_extra_medium)),
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
-            )
+            ),
         )
         Row(
             modifier = Modifier
@@ -174,14 +206,14 @@ private fun MessagePanel(modifier: Modifier = Modifier) {
                 .padding(dimensionResource(R.dimen.padding_small))
         ) {
             SimpleButton(
-                onClick = { },
+                onClick = onClickClear,
                 nameOfButton = stringResource(id = R.string.clear),
                 shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier
             )
             Spacer(modifier = Modifier.width(8.dp))
             SimpleButton(
-                onClick = { },
+                onClick = onClickEnter,
                 nameOfButton = stringResource(id = R.string.enter),
                 shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier
@@ -191,21 +223,23 @@ private fun MessagePanel(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun RecentVisitors(modifier: Modifier = Modifier) {
+private fun RecentVisitors(
+    listOfUsers: MutableList<@Composable () -> Unit>,
+    modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.recent_visitor),
         style = MaterialTheme.typography.displayMedium,
         modifier = modifier
     )
-    VisitorPlates(
-        nameOfVisitors = "Borils",
-        isAuthorized = true,
-        modifier = Modifier.padding(start = 8.dp)
-    )
+    LazyRow {
+        items(listOfUsers.size) { users ->
+            listOfUsers[users]()
+        }
+    }
 }
 
 @Composable
-private fun VisitorPlates(
+private fun VisitorCard(
     nameOfVisitors: String,
     isAuthorized: Boolean,
     modifier:Modifier = Modifier) {
@@ -213,12 +247,9 @@ private fun VisitorPlates(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        Image(
-            painter = painterResource(R.drawable.thomas_si_boss),
-            modifier = Modifier
-                .size(64.dp)
-                .clip(MaterialTheme.shapes.extraLarge),
-            contentScale = ContentScale.Crop,
+        ImageContainer(
+            faceImage = R.drawable.thomas_si_boss,
+            imageSize = 64,
             contentDescription = "bossing"
         )
         Text(text = nameOfVisitors)

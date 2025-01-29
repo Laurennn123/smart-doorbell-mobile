@@ -29,4 +29,9 @@
     <string name="all_authorized_person">All Authorized Person</string>
     <string name="add_new_authorized_person">Add New Authorized Person</string>
     <string name="view_authorized_list">View Authorized List</string>
+    <string name="welcome">Welcome!</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
 </resources>

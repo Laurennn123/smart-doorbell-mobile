@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -83,7 +84,7 @@ private fun DeleteAndResetButtonPic(modifier: Modifier = Modifier) {
             contentDescription = "Delete",
         )
         IconAppBar(
-            icon = Icons.Filled.Refresh,
+            icon = Icons.Filled.Autorenew,
             onClick = { },
             contentDescription = "Refresh",
         )

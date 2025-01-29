@@ -22,3 +22,13 @@ fun IconAppBar(
         )
     }
 }
+
+@Composable
+fun DefaultIcon(
+    icon: ImageVector,
+    nameOfIcon: String) {
+    Icon(
+        imageVector = icon,
+        contentDescription = nameOfIcon
+    )
+}

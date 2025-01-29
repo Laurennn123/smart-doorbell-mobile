@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -40,12 +39,15 @@ import com.example.mobileapp.ui.FaceEnrollmentAddOrView
 import com.example.mobileapp.ui.FaceEnrollmentScreen
 import com.example.mobileapp.ui.HomeScreen
 import com.example.mobileapp.ui.SettingsScreen
+import com.example.mobileapp.ui.appbar.LogAndSignInBottomBar
 import com.example.mobileapp.ui.components.IconAppBar
+import com.example.mobileapp.ui.login.LoginScreen
 
 
 enum class SmartDoorbellScreen {
     Home,
     Settings,
+    Login
 }
 
 enum class SettingsScreen {
@@ -66,19 +68,22 @@ fun SmartDoorbellApp(
 
     Scaffold(
         topBar = {
-            if (currentScreen == SmartDoorbellScreen.Home.name) {
-                HomeScreenAppBar()
-            } else {
-                BackAndUserAppBar(
-                    navigateUp = {
-                        if (currentScreen == "View Authorized" || currentScreen == "Add New") {
-                            navController.popBackStack(route = SmartDoorbellScreen.Settings.name, false)
-                        } else {
-                            navController.navigateUp()
-                        }
-                    }
-                )
-            }
+//            if (currentScreen == SmartDoorbellScreen.Home.name) {
+//                HomeScreenAppBar()
+//            } else {
+//                BackAndUserAppBar(
+//                    navigateUp = {
+//                        if (currentScreen == "View Authorized" || currentScreen == "Add New") {
+//                            navController.popBackStack(route = SmartDoorbellScreen.Settings.name, false)
+//                        } else {
+//                            navController.navigateUp()
+//                        }
+//                    }
+//                )
+//            }
+        },
+        bottomBar = {
+            LogAndSignInBottomBar()
         }
     ) { innerPadding ->
         val authorizeUiState by authorizedViewModel.uiState.collectAsState()
@@ -86,9 +91,12 @@ fun SmartDoorbellApp(
 
         NavHost(
             navController =  navController,
-            startDestination = SmartDoorbellScreen.Home.name,
+            startDestination = SmartDoorbellScreen.Login.name,
             modifier =  Modifier.padding(innerPadding)
         ) {
+            composable(route = SmartDoorbellScreen.Login.name) {
+                LoginScreen(modifier = Modifier.fillMaxSize())
+            }
 
             composable(route = SmartDoorbellScreen.Home.name) {
                 HomeScreen(
@@ -226,34 +234,3 @@ private fun HomeScreenAppBar(modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
-
-//@Composable
-//private fun FaceEnrollmentSelection(
-//    onClickAddNew: () -> Unit,
-//    onClickView: () -> Unit,
-//    modifier: Modifier = Modifier) {
-//    Row(
-//        horizontalArrangement = Arrangement.SpaceBetween,
-//        modifier = modifier
-//    ) {
-//        SimpleButton(
-//            onClick = onClickAddNew,
-//            nameOfButton = stringResource(R.string.add_new_authorized_person),
-//            shape = MaterialTheme.shapes.medium,
-//            modifier = Modifier
-//                .height(150.dp)
-//                .width(150.dp)
-//                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
-//        )
-//        Spacer(modifier = Modifier.width(24.dp))
-//        SimpleButton(
-//            onClick = onClickView,
-//            nameOfButton = stringResource(R.string.view_authorized_list),
-//            shape = MaterialTheme.shapes.medium,
-//            modifier = Modifier
-//                .height(150.dp)
-//                .width(150.dp)
-//                .padding(end = 16.dp, top = 16.dp, bottom = 16.dp)
-//        )
-//    }
-//}

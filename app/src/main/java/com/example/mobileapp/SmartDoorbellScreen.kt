@@ -1,5 +1,6 @@
 package com.example.mobileapp
 
+import android.graphics.LinearGradient
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import android.graphics.Shader
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import com.example.mobileapp.data.DataSource.settings
 import com.example.mobileapp.model.AuthorizedPerson
 import com.example.mobileapp.model.AuthorizedPersonModel
@@ -42,12 +52,14 @@ import com.example.mobileapp.ui.SettingsScreen
 import com.example.mobileapp.ui.appbar.LogAndSignInBottomBar
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.login.LoginScreen
+import com.example.mobileapp.ui.sign_up.SignUpScreen
 
 
 enum class SmartDoorbellScreen {
     Home,
     Settings,
-    Login
+    Login,
+    SignUp
 }
 
 enum class SettingsScreen {
@@ -67,7 +79,7 @@ fun SmartDoorbellApp(
     var settingsSelect by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
-        topBar = {
+//        topBar = {
 //            if (currentScreen == SmartDoorbellScreen.Home.name) {
 //                HomeScreenAppBar()
 //            } else {
@@ -81,101 +93,121 @@ fun SmartDoorbellApp(
 //                    }
 //                )
 //            }
-        },
-        bottomBar = {
-            LogAndSignInBottomBar()
-        }
+//        },
+//        bottomBar = {
+//            LogAndSignInBottomBar()
+//        },
     ) { innerPadding ->
-        val authorizeUiState by authorizedViewModel.uiState.collectAsState()
-        val entriesUiState by entriesViewModel.uiState.collectAsState()
+//        Box(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .background(brush = Brush.linearGradient(
+//                    colors = listOf(Color(0xFF041721), Color(0xFF00818F)
+//                    )))
+//        ) {
+            val authorizeUiState by authorizedViewModel.uiState.collectAsState()
+            val entriesUiState by entriesViewModel.uiState.collectAsState()
 
-        NavHost(
-            navController =  navController,
-            startDestination = SmartDoorbellScreen.Login.name,
-            modifier =  Modifier.padding(innerPadding)
-        ) {
-            composable(route = SmartDoorbellScreen.Login.name) {
-                LoginScreen(modifier = Modifier.fillMaxSize())
-            }
-
-            composable(route = SmartDoorbellScreen.Home.name) {
-                HomeScreen(
-                    onClick = {
-                        navController.navigate(SmartDoorbellScreen.Settings.name)
-                    },
-                    tryClick = {
-                        authorizeUiState.listOfAuthorizedPerson.add(
-                            AuthorizedPerson(
-                                faceImage = R.drawable.thomas_si_boss,
-                                name = "Bossing",
-                                relationship = "Brother"
-                            )
-                        )
-                        entriesViewModel.updateTimeAndDate()
-                        entriesUiState.listOfEntries.add(
-                            EntriesHistory(
-                                faceImage = R.drawable.thomas_si_boss,
-                                name = "Bossing",
-                                date = entriesViewModel.currentDate,
-                                time = entriesViewModel.currentTime
-                            )
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                )
-            }
-
-            composable(route = SmartDoorbellScreen.Settings.name) {
-                SettingsScreen(
-                    settings = settings,
-                    onClick = { settingsSelect = it },
-                    modifier = Modifier
-                        .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                )
-                if (settingsSelect == SettingsScreen.`Face Enrollment`.name) {
-                    FaceEnrollmentAddOrView(
-                        onDismissRequest = {
-                            settingsSelect = ""
-                        },
-                        onClickAddNew = {
-                            settingsSelect = ""
-                            navController.navigate("Add New")
-                             },
-                        onClickView = {
-                            settingsSelect = ""
-                            navController.navigate("View Authorized")
-                        }
+            NavHost(
+                navController =  navController,
+                startDestination = SmartDoorbellScreen.SignUp.name,
+                modifier =  Modifier.padding(innerPadding)
+            ) {
+                composable(route = SmartDoorbellScreen.SignUp.name) {
+                    SignUpScreen(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .fillMaxSize()
                     )
-                } else if (settingsSelect == SettingsScreen.`Entries History`.name) {
-                    settingsSelect = ""
-                    navController.navigate(SettingsScreen.`Entries History`.name)
                 }
-            }
 
-            composable(route = "Add New") {
-                FaceEnrollmentScreen(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    onClick = {}
-                )
-            }
-            composable(route = "View Authorized") {
-                AuthorizedScreen(
-                    listOfAllAuthorized = authorizeUiState.listOfAuthorizedPerson,
-                    modifier = Modifier
-                        .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                )
-            }
+                composable(route = SmartDoorbellScreen.Login.name) {
+                    LoginScreen(
+                        signIn = { navController.navigate(SmartDoorbellScreen.Home.name) },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
-            composable(route = SettingsScreen.`Entries History`.name) {
-                EntriesHistoryScreen(
-                    listOfEntries = entriesUiState.listOfEntries
-                )
-            }
+                composable(route = SmartDoorbellScreen.Home.name) {
+                    HomeScreen(
+                        onClick = {
+                            navController.navigate(SmartDoorbellScreen.Settings.name)
+                        },
+                        tryClick = {
+                            authorizeUiState.listOfAuthorizedPerson.add(
+                                AuthorizedPerson(
+                                    faceImage = R.drawable.thomas_si_boss,
+                                    name = "Bossing",
+                                    relationship = "Brother"
+                                )
+                            )
+                            entriesViewModel.updateTimeAndDate()
+                            entriesUiState.listOfEntries.add(
+                                EntriesHistory(
+                                    faceImage = R.drawable.thomas_si_boss,
+                                    name = "Bossing",
+                                    date = entriesViewModel.currentDate,
+                                    time = entriesViewModel.currentTime
+                                )
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                    )
+                }
 
-        }
+                composable(route = SmartDoorbellScreen.Settings.name) {
+                    SettingsScreen(
+                        settings = settings,
+                        onClick = { settingsSelect = it },
+                        modifier = Modifier
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                    )
+                    if (settingsSelect == SettingsScreen.`Face Enrollment`.name) {
+                        FaceEnrollmentAddOrView(
+                            onDismissRequest = {
+                                settingsSelect = ""
+                            },
+                            onClickAddNew = {
+                                settingsSelect = ""
+                                navController.navigate("Add New")
+                            },
+                            onClickView = {
+                                settingsSelect = ""
+                                navController.navigate("View Authorized")
+                            }
+                        )
+                    } else if (settingsSelect == SettingsScreen.`Entries History`.name) {
+                        settingsSelect = ""
+                        navController.navigate(SettingsScreen.`Entries History`.name)
+                    }
+                }
+
+                composable(route = "Add New") {
+                    FaceEnrollmentScreen(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        onClick = {}
+                    )
+                }
+                composable(route = "View Authorized") {
+                    AuthorizedScreen(
+                        listOfAllAuthorized = authorizeUiState.listOfAuthorizedPerson,
+                        modifier = Modifier
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                    )
+                }
+
+                composable(route = SettingsScreen.`Entries History`.name) {
+                    EntriesHistoryScreen(
+                        listOfEntries = entriesUiState.listOfEntries
+                    )
+                }
+
+            }
+//        }
     }
 }
 
@@ -200,7 +232,10 @@ private fun BackAndUserAppBar(
                 onClick = { },
                 contentDescription = stringResource(id = R.string.user_account),
             )
-        }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFF041721).copy(alpha = 0.1f)
+        ),
     )
 }
 
@@ -231,6 +266,11 @@ private fun HomeScreenAppBar(modifier: Modifier = Modifier) {
                 )
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFF041721).copy(alpha = 0.1f)
+        ),
         modifier = modifier
     )
+
+
 }

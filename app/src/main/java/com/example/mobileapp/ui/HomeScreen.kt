@@ -185,7 +185,7 @@ private fun MessagePanel(
             text = stringResource(id = R.string.message_panel),
             style = MaterialTheme.typography.displayMedium,
             modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
-            )
+        )
         TextField(
             value = messageValue,
             onValueChange = userMessage,

@@ -29,7 +29,9 @@ import com.example.mobileapp.ui.components.TextFieldWithIcon
 import com.example.mobileapp.ui.components.WelcomeMessage
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(
+    signIn: () -> Unit,
+    modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -40,7 +42,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         Username()
         Password()
         Spacer(modifier = Modifier.height(20.dp))
-        SignIn()
+        SignIn(onClick = signIn)
     }
 }
 
@@ -53,7 +55,10 @@ private fun Username() {
         label = stringResource(R.string.username),
         displayTyped = "",
         userTyped = {},
-        colors = TextFieldDefaults.colors(Color.Transparent),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+        ),
         visualTransformation = VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         modifier = Modifier
@@ -70,7 +75,10 @@ private fun Password() {
         label = stringResource(R.string.password),
         displayTyped = "",
         userTyped = {},
-        colors = TextFieldDefaults.colors(Color.Transparent),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+        ),
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         modifier = Modifier
@@ -79,9 +87,11 @@ private fun Password() {
 }
 
 @Composable
-private fun SignIn() {
+private fun SignIn(
+    onClick: () -> Unit
+) {
     SimpleButton(
-        onClick = {},
+        onClick = onClick,
         nameOfButton = stringResource(R.string.sign_in),
         shape = MaterialTheme.shapes.extraLarge
     )

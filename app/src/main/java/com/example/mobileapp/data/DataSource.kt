@@ -15,7 +15,6 @@ object DataSource {
         Settings(R.string.my_account, Icons.Filled.AccountCircle),
         Settings(R.string.face_enrollment, Icons.Filled.Face),
         Settings(R.string.entries_history, Icons.Filled.Lock),
-        Settings(R.string.general_settings, Icons.Filled.Settings),
         Settings(R.string.about_us, Icons.Filled.Info),
         Settings(R.string.logout, Icons.Filled.Close),
     )

@@ -6,12 +6,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun TextFieldWithIcon(
-    icon: @Composable () -> Unit,
+    icon: @Composable () -> Unit = {},
     label: String,
     displayTyped: String,
     userTyped: (String) -> Unit,

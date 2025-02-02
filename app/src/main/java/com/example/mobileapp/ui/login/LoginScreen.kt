@@ -1,98 +1,101 @@
 package com.example.mobileapp.ui.login
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.mobileapp.R
-import com.example.mobileapp.ui.components.DefaultIcon
+import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
-import com.example.mobileapp.ui.components.TextFieldWithIcon
-import com.example.mobileapp.ui.components.WelcomeMessage
+import com.example.mobileapp.ui.components.UserInput
 
 @Composable
 fun LoginScreen(
-    signIn: () -> Unit,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier,
+    onLoginClick: () -> Unit
+) {
     Column(
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        WelcomeMessage()
-        Spacer(modifier = Modifier.height(40.dp))
-        Username()
-        Password()
-        Spacer(modifier = Modifier.height(20.dp))
-        SignIn(onClick = signIn)
+        Text(text = stringResource(id = R.string.login),
+            style = MaterialTheme.typography.displayLarge,
+            modifier = Modifier
+                .align(alignment = Alignment.Start)
+                .padding(start = dimensionResource(R.dimen.padding_medium))
+        )
+        Spacer(modifier = Modifier.height(120.dp))
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = dimensionResource(R.dimen.padding_large))
+        ) {
+            UserInput(
+                displayTyped = "",
+                userTyped = {},
+                label = stringResource(id = R.string.email)
+            )
+            UserInput(
+                displayTyped = "",
+                userTyped = {},
+                label = stringResource(id = R.string.password),
+                visualTransformation = PasswordVisualTransformation(),
+                icon = {
+                    IconAppBar(
+                        icon = Icons.Default.RemoveRedEye,
+                        onClick = {},
+                        contentDescription = stringResource(id = R.string.password)
+                    )
+                },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+            )
+            Spacer(modifier = Modifier.height(15.dp))
+            Text(
+                text = stringResource(id = R.string.forgot_password),
+                modifier = Modifier.clickable {
+
+                }.align(alignment = Alignment.End)
+                    .drawBehind {
+                        val strokeWidthPx = 1.dp.toPx()
+                        val verticalOffset = size.height - 2.sp.toPx()
+                        drawLine(
+                            color = Color.LightGray,
+                            strokeWidth = strokeWidthPx,
+                            start = Offset(-1f, verticalOffset),
+                            end = Offset(size.width, verticalOffset)
+                        )
+                    }
+
+            )
+        }
+        Spacer(modifier = Modifier.height(70.dp))
+        SimpleButton(
+            onClick = onLoginClick,
+            nameOfButton = stringResource(id = R.string.login).uppercase(),
+            shape = MaterialTheme.shapes.extraLarge,
+        )
     }
+
 }
 
-@Composable
-private fun Username() {
-    TextFieldWithIcon(
-        icon = { DefaultIcon(
-            icon = Icons.Outlined.AccountCircle,
-            nameOfIcon = stringResource(R.string.username)) },
-        label = stringResource(R.string.username),
-        displayTyped = "",
-        userTyped = {},
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-        ),
-        visualTransformation = VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-        modifier = Modifier
-            .fillMaxWidth()
-    )
-}
 
-@Composable
-private fun Password() {
-    TextFieldWithIcon(
-        icon = { DefaultIcon(
-            icon = Icons.Outlined.Lock,
-            nameOfIcon = stringResource(R.string.password)) },
-        label = stringResource(R.string.password),
-        displayTyped = "",
-        userTyped = {},
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-        ),
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        modifier = Modifier
-            .fillMaxWidth()
-    )
-}
-
-@Composable
-private fun SignIn(
-    onClick: () -> Unit
-) {
-    SimpleButton(
-        onClick = onClick,
-        nameOfButton = stringResource(R.string.sign_in),
-        shape = MaterialTheme.shapes.extraLarge
-    )
-}

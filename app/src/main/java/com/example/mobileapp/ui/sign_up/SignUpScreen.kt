@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -66,7 +67,6 @@ fun SignUpScreen(
                 .padding(horizontal = dimensionResource(R.dimen.padding_medium))
         ) {
             IdentityForm(
-                signUpUiState = signUpViewModel.signUpUiState,
                 signUpViewModel = signUpViewModel,
                 onValueChange = signUpViewModel::updateUiState
             )
@@ -74,7 +74,8 @@ fun SignUpScreen(
             SimpleButton(
                 onClick = {},
                 nameOfButton = stringResource(R.string.sign_up).uppercase(),
-                shape = MaterialTheme.shapes.extraLarge
+                shape = MaterialTheme.shapes.extraLarge,
+                enabled = signUpViewModel.signUpUiState.isEntryValid
             )
         }
         Spacer(modifier = Modifier.height(100.dp))
@@ -89,15 +90,15 @@ fun SignUpScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IdentityForm(
-    signUpUiState: SignUpUiState,
     signUpViewModel: SignUpViewModel,
     onValueChange: (SignUpDetails) -> Unit = {}) {
     IdentityTextField(
         label = stringResource(R.string.full_name),
-        displayTyped = signUpUiState.signUpDetails.fullName,
-        userTyped = { onValueChange(signUpUiState.signUpDetails.copy(fullName = it)) },
+        displayTyped = signUpViewModel.signUpUiState.signUpDetails.fullName,
+        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(fullName = it)) },
         visualTransformation = VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -106,8 +107,8 @@ private fun IdentityForm(
     )
     IdentityTextField(
         label = stringResource(R.string.email),
-        displayTyped = signUpUiState.signUpDetails.email,
-        userTyped = { onValueChange(signUpUiState.signUpDetails.copy(email = it)) },
+        displayTyped = signUpViewModel.signUpUiState.signUpDetails.email,
+        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(email = it)) },
         visualTransformation = VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -116,8 +117,8 @@ private fun IdentityForm(
     )
     IdentityTextField(
         label = stringResource(R.string.password),
-        displayTyped = signUpUiState.signUpDetails.password,
-        userTyped = { onValueChange(signUpUiState.signUpDetails.copy(password = it)) },
+        displayTyped = signUpViewModel.signUpUiState.signUpDetails.password,
+        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(password = it)) },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
@@ -126,8 +127,8 @@ private fun IdentityForm(
     )
     IdentityTextField(
         label = stringResource(R.string.re_enter_password),
-        displayTyped = signUpUiState.signUpDetails.reEnterPassword,
-        userTyped = { onValueChange(signUpUiState.signUpDetails.copy(reEnterPassword = it)) },
+        displayTyped = signUpViewModel.signUpUiState.signUpDetails.reEnterPassword,
+        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(reEnterPassword = it)) },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
@@ -142,14 +143,23 @@ private fun IdentityForm(
             .padding(horizontal = dimensionResource(R.dimen.padding_medium))
     ) {
         DatePickerDocked(
-            signUpUiState = signUpUiState,
-            signUpViewModel = signUpViewModel,
-            onClick = { signUpViewModel.clickedCalendarIcon() }
+            showDatePicker = signUpViewModel.showDatePicker,
+            onDismissRequest = {
+                signUpViewModel.updateDate(it)
+                signUpViewModel.onDismissCalendar()
+            },
+            datePicker = signUpViewModel::selectedDate,
+            onClick = {
+                signUpViewModel.clickedCalendarIcon()
+            }
         )
         GenderPicker(
-            gender = signUpUiState.signUpDetails.gender,
-            signUpUiState = signUpUiState,
-            signUpViewModel = signUpViewModel
+            gender = signUpViewModel.gender,
+            showMenuPicker = signUpViewModel.showMenuPicker,
+            iconOnClick = { signUpViewModel.clickedArrowDownIcon() },
+            onDismissRequest = { signUpViewModel.onDismissGenderPicker() },
+            onMaleClick = { signUpViewModel.updateGender("Male") },
+            onFemaleClick = { signUpViewModel.updateGender("Female") }
         )
     }
 }
@@ -181,14 +191,13 @@ private fun IdentityTextField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DatePickerDocked(
-    signUpUiState: SignUpUiState,
-    signUpViewModel: SignUpViewModel,
+    showDatePicker: Boolean,
+    onDismissRequest: (String) -> Unit,
+    datePicker: (DatePickerState) -> String,
     onClick: () -> Unit
 ) {
     val datePickerState = rememberDatePickerState()
-    val selectedDate = datePickerState.selectedDateMillis?.let {
-        signUpViewModel.convertMillisToDate(it)
-    } ?: ""
+    val selectedDate = datePicker(datePickerState)
 
     Box(
         modifier = Modifier.padding(12.dp)
@@ -210,11 +219,9 @@ private fun DatePickerDocked(
                 .width(170.dp)
         )
 
-        if (signUpUiState.showDatePicker) {
+        if (showDatePicker) {
             Popup(
-                onDismissRequest = {
-                    signUpViewModel.updateDateBirthAndPicker(selectedDate)
-                },
+                onDismissRequest = { onDismissRequest(selectedDate) },
                 alignment = Alignment.TopStart
             ) {
                 Box(
@@ -236,8 +243,11 @@ private fun DatePickerDocked(
 @Composable
 private fun GenderPicker(
     gender: String,
-    signUpUiState: SignUpUiState,
-    signUpViewModel: SignUpViewModel
+    showMenuPicker: Boolean,
+    iconOnClick: () -> Unit,
+    onDismissRequest: () -> Unit,
+    onMaleClick: () -> Unit,
+    onFemaleClick: () -> Unit
 ) {
 
     Box(
@@ -251,7 +261,7 @@ private fun GenderPicker(
             trailingIcon = {
                 IconAppBar(
                     icon = Icons.Default.KeyboardArrowDown,
-                    onClick = { signUpViewModel.clickedArrowDownIcon() },
+                    onClick = iconOnClick,
                     contentDescription = stringResource(R.string.arrow_down)
                 )
             },
@@ -260,19 +270,17 @@ private fun GenderPicker(
                 .width(140.dp)
         )
         DropdownMenu(
-            expanded = signUpUiState.showMenuPicker,
-            onDismissRequest = { signUpViewModel.dismissMenu() }
+            expanded = showMenuPicker,
+            onDismissRequest = onDismissRequest
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.male)) },
-                onClick = { signUpViewModel.updateGender("Male") }
+                onClick = onMaleClick
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.female)) },
-                onClick = { signUpViewModel.updateGender("Female") }
+                onClick = onFemaleClick
             )
         }
     }
-
-
 }

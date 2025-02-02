@@ -19,6 +19,12 @@ val NotoSerif = FontFamily(
 )
 
 val Typography = Typography(
+    headlineLarge = TextStyle(
+        fontFamily = Quicksand,
+        fontWeight = FontWeight.Bold,
+        fontSize = 64.sp
+    ),
+
     displayLarge = TextStyle(
         fontFamily = Quicksand,
         fontWeight = FontWeight.Bold,
@@ -33,6 +39,18 @@ val Typography = Typography(
         fontFamily = Quicksand,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp
+    ),
+
+    bodyMedium = TextStyle(
+        fontFamily = NotoSerif,
+        fontWeight = FontWeight.Normal,
+        fontSize = 18.sp
+    ),
+
+    bodySmall = TextStyle(
+        fontFamily = NotoSerif,
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
     ),
 
     labelLarge = TextStyle(

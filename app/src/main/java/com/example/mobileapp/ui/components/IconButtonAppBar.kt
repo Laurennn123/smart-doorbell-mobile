@@ -26,9 +26,12 @@ fun IconAppBar(
 @Composable
 fun DefaultIcon(
     icon: ImageVector,
-    nameOfIcon: String) {
+    nameOfIcon: String,
+    modifier: Modifier = Modifier
+) {
     Icon(
         imageVector = icon,
-        contentDescription = nameOfIcon
+        contentDescription = nameOfIcon,
+        modifier = modifier
     )
 }

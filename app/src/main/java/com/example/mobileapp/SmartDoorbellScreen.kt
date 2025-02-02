@@ -38,6 +38,8 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.mobileapp.data.DataSource.settings
 import com.example.mobileapp.model.AuthorizedPerson
 import com.example.mobileapp.model.AuthorizedPersonModel
@@ -49,17 +51,21 @@ import com.example.mobileapp.ui.FaceEnrollmentAddOrView
 import com.example.mobileapp.ui.FaceEnrollmentScreen
 import com.example.mobileapp.ui.HomeScreen
 import com.example.mobileapp.ui.SettingsScreen
+import com.example.mobileapp.ui.about_us.AboutUsScreen
 import com.example.mobileapp.ui.appbar.LogAndSignInBottomBar
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.login.LoginScreen
 import com.example.mobileapp.ui.sign_up.SignUpScreen
+import com.example.mobileapp.ui.welcome.WelcomeScreen
 
 
 enum class SmartDoorbellScreen {
     Home,
     Settings,
     Login,
-    SignUp
+    SignUp,
+    Welcome,
+    AboutUs
 }
 
 enum class SettingsScreen {
@@ -67,7 +73,6 @@ enum class SettingsScreen {
     `Face Enrollment`
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SmartDoorbellApp(
     authorizedViewModel: AuthorizedPersonModel = viewModel(),
@@ -110,9 +115,33 @@ fun SmartDoorbellApp(
 
             NavHost(
                 navController =  navController,
-                startDestination = SmartDoorbellScreen.SignUp.name,
+                startDestination = SmartDoorbellScreen.Welcome.name,
                 modifier =  Modifier.padding(innerPadding)
             ) {
+                composable(route = SmartDoorbellScreen.Welcome.name) {
+                    WelcomeScreen(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                            .fillMaxSize(),
+                        onClickContinue = {
+                            navController.navigate(route = SmartDoorbellScreen.Login.name)
+                        }
+                    )
+                }
+
+                composable(route = SmartDoorbellScreen.Login.name) {
+                    LoginScreen(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxSize()
+                            .statusBarsPadding(),
+                        onLoginClick = {
+                            navController.navigate(route = SmartDoorbellScreen.AboutUs.name)
+                        }
+                    )
+                }
+
                 composable(route = SmartDoorbellScreen.SignUp.name) {
                     SignUpScreen(
                         modifier = Modifier
@@ -122,10 +151,13 @@ fun SmartDoorbellApp(
                     )
                 }
 
-                composable(route = SmartDoorbellScreen.Login.name) {
-                    LoginScreen(
-                        signIn = { navController.navigate(SmartDoorbellScreen.Home.name) },
-                        modifier = Modifier.fillMaxSize()
+                composable(route = SmartDoorbellScreen.AboutUs.name) {
+                    AboutUsScreen(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .fillMaxSize()
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
                     )
                 }
 
@@ -271,6 +303,4 @@ private fun HomeScreenAppBar(modifier: Modifier = Modifier) {
         ),
         modifier = modifier
     )
-
-
 }

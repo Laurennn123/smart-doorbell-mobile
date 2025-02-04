@@ -103,7 +103,7 @@ class SignUpViewModel() : ViewModel() {
 
 //    suspend fun addAccount() {
 //        if (validateInput()) {
-//            signUpDao.insert(signUpUiState.signUpDetails.toSignUp())
+//            signUpDao.insertAccount(signUpUiState.signUpDetails.toSignUp())
 //        }
 //    }
 
@@ -119,14 +119,14 @@ class SignUpViewModel() : ViewModel() {
         return formatter.format(Date(millis))
     }
 
-    companion object {
+//    companion object {
 //        val factory : ViewModelProvider.Factory = viewModelFactory {
 //            initializer {
-//                val application = (this[APPLICATION_KEY] as SmartDoorBellApplication)
+//                val application = (this[APPLICATION_KEY] as SmartDoorbellApplication)
 //                SignUpViewModel(application.database.signUpDao())
 //            }
 //        }
-    }
+//    }
 }
 
 data class SignUpUiState (
@@ -143,3 +143,13 @@ data class SignUpDetails(
     val dateOfBirth: String = "",
     val gender: String = ""
 )
+
+//fun SignUpDetails.toSignUp(): SignUp = SignUp(
+//    id = id,
+//    fullName = fullName,
+//    email = email,
+//    password = password,
+//    reEnterPassword = reEnterPassword,
+//    dateOfBirth = dateOfBirth,
+//    gender = gender
+//)

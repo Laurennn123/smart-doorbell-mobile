@@ -45,10 +45,16 @@
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="date_of_birth">Date of Birth</string>
-    
     <string name="welcome_description">Smart, secure, and seamless home access. With AI-powered facial recognition, real-time notifications, and remote door control, Smart Entry keeps you connected and in control—anytime, anywhere. </string>
     <string name="welcome_motto">Stay safe. Stay connected. Stay in control</string>
     <string name="_continue">Continue</string>
     <string name="forgot_password">Forgot Password?</string>
+    <string name="user_email">Email:%1$s</string>
+    <string name="change_password">Change password</string>
+    <string name="enter_username">Enter username</string>
+    <string name="input_contact_num">Input contact number</string>
+    <string name="input_address">Input address</string>
+    <string name="address">Address</string>
+    <string name="contact_num">Contact number</string>
     <string name="about_us_description">Welcome to Smart Entry, your smart and secure home access solution. Our mobile application is designed to seamlessly integrate with the Smart Doorbell System, providing homeowners with real-time visitor notifications, remote door access, and advanced facial recognition technology.\n\n At Smart Entry, we prioritize security, convenience, and ease of use. Our goal is to enhance home security by allowing users to monitor and manage guest access anytime, anywhere. Whether it’s identifying visitors, unlocking the door remotely, or keeping track of entry logs, our app ensures that you stay in control of your home’s security with just a few taps.</string>
 </resources>

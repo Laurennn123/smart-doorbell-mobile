@@ -34,10 +34,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.mobileapp.data.DataSource.settings
@@ -52,6 +56,10 @@ import com.example.mobileapp.ui.FaceEnrollmentScreen
 import com.example.mobileapp.ui.HomeScreen
 import com.example.mobileapp.ui.SettingsScreen
 import com.example.mobileapp.ui.about_us.AboutUsScreen
+import com.example.mobileapp.ui.account.BirthDatePicker
+import com.example.mobileapp.ui.account.InputDialog
+import com.example.mobileapp.ui.account.MyAccountScreen
+import com.example.mobileapp.ui.account.MyAccountViewModel
 import com.example.mobileapp.ui.appbar.LogAndSignInBottomBar
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.login.LoginScreen
@@ -65,7 +73,8 @@ enum class SmartDoorbellScreen {
     Login,
     SignUp,
     Welcome,
-    AboutUs
+    AboutUs,
+    Account,
 }
 
 enum class SettingsScreen {
@@ -77,9 +86,11 @@ enum class SettingsScreen {
 fun SmartDoorbellApp(
     authorizedViewModel: AuthorizedPersonModel = viewModel(),
     entriesViewModel: EntriesHistoryModel = viewModel(),
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    myAccountModel: MyAccountViewModel = viewModel()
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
+    val accountUiState by myAccountModel.accountUiState.collectAsState()
     val currentScreen = backStackEntry?.destination?.route
     var settingsSelect by rememberSaveable { mutableStateOf("") }
 
@@ -115,7 +126,7 @@ fun SmartDoorbellApp(
 
             NavHost(
                 navController =  navController,
-                startDestination = SmartDoorbellScreen.Welcome.name,
+                startDestination = SmartDoorbellScreen.Account.name,
                 modifier =  Modifier.padding(innerPadding)
             ) {
                 composable(route = SmartDoorbellScreen.Welcome.name) {
@@ -128,6 +139,74 @@ fun SmartDoorbellApp(
                             navController.navigate(route = SmartDoorbellScreen.Login.name)
                         }
                     )
+                }
+
+                composable(route = SmartDoorbellScreen.Account.name) {
+                    MyAccountScreen(
+                        userName = accountUiState.userName,
+                        email = accountUiState.email,
+                        address = accountUiState.address,
+                        contactNumber = accountUiState.contactNumber,
+                        birthDate = accountUiState.birthDate,
+                        editClick = { myAccountModel.updateClicked(buttonClick = "Edit") },
+                        addressClick = { myAccountModel.updateClicked(buttonClick = "Address") },
+                        contactClick = { myAccountModel.updateClicked(buttonClick = "Contact") },
+                        dateClick = { myAccountModel.updateClicked(buttonClick = "Birth Date")},
+                        changePassClick = {},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                            .statusBarsPadding()
+                    )
+                    if(myAccountModel.userButtonDetailClicked) {
+                        val buttonClicked = myAccountModel.buttonClicked
+                        if (buttonClicked == "Address") {
+                            InputDialog(
+                                typeOfInput = stringResource(R.string.input_address),
+                                nameOfInput = stringResource(R.string.address),
+                                onDismissRequest = { myAccountModel.onDismiss() },
+                                valueInputted = myAccountModel.address,
+                                onValueChange = { myAccountModel.address = it},
+                                cancelClick = { myAccountModel.onDismiss() },
+                                confirmClick = { myAccountModel.updateAddress() }
+                            )
+                        } else if (buttonClicked == "Contact") {
+                            InputDialog(
+                                typeOfInput = stringResource(R.string.input_contact_num),
+                                nameOfInput = stringResource(R.string.contact_num),
+                                onDismissRequest = { myAccountModel.onDismiss() },
+                                valueInputted = myAccountModel.contactNumber,
+                                onValueChange = { myAccountModel.contactNumber = it  },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Decimal,
+                                    imeAction = ImeAction.Done
+                                ),
+                                cancelClick = { myAccountModel.onDismiss() },
+                                confirmClick = { myAccountModel.updateContactNumber() }
+                            )
+                        } else if (buttonClicked == "Edit") {
+                            InputDialog(
+                                typeOfInput = stringResource(R.string.enter_username),
+                                nameOfInput = stringResource(R.string.username),
+                                onDismissRequest = { myAccountModel.onDismiss() },
+                                valueInputted = myAccountModel.userName,
+                                onValueChange = {
+                                    if (myAccountModel.userName.length <= 10) {
+                                        myAccountModel.userName = it
+                                    } else {
+                                        myAccountModel.userName = myAccountModel.userName.slice(0..9)
+                                    }
+                                },
+                                cancelClick = { myAccountModel.onDismiss() },
+                                confirmClick = { myAccountModel.updateUsername() }
+                            )
+                        } else if (buttonClicked == "Birth Date") {
+                            val birthDate =   BirthDatePicker(onDismissRequest = { myAccountModel.onDismiss() })
+                            if(birthDate.isNotBlank()) {
+                                myAccountModel.updateBirthDate(birthDate)
+                            }
+                        }
+                    }
                 }
 
                 composable(route = SmartDoorbellScreen.Login.name) {

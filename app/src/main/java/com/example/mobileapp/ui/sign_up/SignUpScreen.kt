@@ -28,6 +28,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,11 +44,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     signUpViewModel: SignUpViewModel = viewModel()) {
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -72,7 +76,11 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(60.dp))
             SimpleButton(
-                onClick = {},
+                onClick = {
+//                    coroutineScope.launch {
+//                        signUpViewModel.addAccount()
+//                    }
+                },
                 nameOfButton = stringResource(R.string.sign_up).uppercase(),
                 shape = MaterialTheme.shapes.extraLarge,
                 enabled = signUpViewModel.signUpUiState.isEntryValid
@@ -149,9 +157,7 @@ private fun IdentityForm(
                 signUpViewModel.onDismissCalendar()
             },
             datePicker = signUpViewModel::selectedDate,
-            onClick = {
-                signUpViewModel.clickedCalendarIcon()
-            }
+            onClick = { signUpViewModel.clickedCalendarIcon() }
         )
         GenderPicker(
             gender = signUpViewModel.gender,

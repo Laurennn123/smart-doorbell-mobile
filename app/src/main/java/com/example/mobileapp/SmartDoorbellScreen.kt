@@ -1,6 +1,12 @@
 package com.example.mobileapp
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +36,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import android.graphics.Shader
+import android.util.Log
+import androidx.camera.core.ImageCapture.OnImageCapturedCallback
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -42,6 +53,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.mobileapp.data.DataSource.settings
@@ -61,10 +73,15 @@ import com.example.mobileapp.ui.account.InputDialog
 import com.example.mobileapp.ui.account.MyAccountScreen
 import com.example.mobileapp.ui.account.MyAccountViewModel
 import com.example.mobileapp.ui.appbar.LogAndSignInBottomBar
+import com.example.mobileapp.ui.camera.CameraPreviewScreen
+import com.example.mobileapp.ui.camera.CameraViewModel
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.login.LoginScreen
 import com.example.mobileapp.ui.sign_up.SignUpScreen
 import com.example.mobileapp.ui.welcome.WelcomeScreen
+import com.google.firebase.Firebase
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 
 enum class SmartDoorbellScreen {
@@ -79,16 +96,22 @@ enum class SmartDoorbellScreen {
 
 enum class SettingsScreen {
     `Entries History`,
-    `Face Enrollment`
+    `Face Enrollment`,
+    `About Us`,
+    `My Account`
 }
 
 @Composable
 fun SmartDoorbellApp(
+    controller: LifecycleCameraController,
+    context: Context,
     authorizedViewModel: AuthorizedPersonModel = viewModel(),
     entriesViewModel: EntriesHistoryModel = viewModel(),
     navController: NavHostController = rememberNavController(),
-    myAccountModel: MyAccountViewModel = viewModel()
+    myAccountModel: MyAccountViewModel = viewModel(),
+    cameraModel: CameraViewModel = viewModel()
 ) {
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val accountUiState by myAccountModel.accountUiState.collectAsState()
     val currentScreen = backStackEntry?.destination?.route
@@ -126,7 +149,7 @@ fun SmartDoorbellApp(
 
             NavHost(
                 navController =  navController,
-                startDestination = SmartDoorbellScreen.Account.name,
+                startDestination = SmartDoorbellScreen.Home.name,
                 modifier =  Modifier.padding(innerPadding)
             ) {
                 composable(route = SmartDoorbellScreen.Welcome.name) {
@@ -141,7 +164,7 @@ fun SmartDoorbellApp(
                     )
                 }
 
-                composable(route = SmartDoorbellScreen.Account.name) {
+                composable(route = SettingsScreen.`My Account`.name) {
                     MyAccountScreen(
                         userName = accountUiState.userName,
                         email = accountUiState.email,
@@ -230,7 +253,7 @@ fun SmartDoorbellApp(
                     )
                 }
 
-                composable(route = SmartDoorbellScreen.AboutUs.name) {
+                composable(route = SettingsScreen.`About Us`.name) {
                     AboutUsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -241,6 +264,7 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SmartDoorbellScreen.Home.name) {
+
                     HomeScreen(
                         onClick = {
                             navController.navigate(SmartDoorbellScreen.Settings.name)
@@ -293,6 +317,12 @@ fun SmartDoorbellApp(
                     } else if (settingsSelect == SettingsScreen.`Entries History`.name) {
                         settingsSelect = ""
                         navController.navigate(SettingsScreen.`Entries History`.name)
+                    } else if (settingsSelect == SettingsScreen.`About Us`.name){
+                        settingsSelect = ""
+                        navController.navigate(SettingsScreen.`About Us`.name)
+                    } else if(settingsSelect == SettingsScreen.`My Account`.name) {
+                        settingsSelect = ""
+                        navController.navigate(SettingsScreen.`My Account`.name)
                     }
                 }
 
@@ -300,9 +330,32 @@ fun SmartDoorbellApp(
                     FaceEnrollmentScreen(
                         modifier = Modifier
                             .fillMaxSize(),
-                        onClick = {}
+                        onClick = {
+                            navController.navigate("Camera Screen")
+                        },
+                        photoTaken = cameraModel.picture
                     )
                 }
+
+                composable(route = "Camera Screen") {
+                    CameraPreviewScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        controller = controller,
+                        onClickPhoto = {
+                            cameraModel.takePhoto(
+                                controller = controller,
+                                context = context,
+                            )
+                        },
+                        navigateUp = {
+                            navController.navigateUp()
+                        },
+                        photoTaken = cameraModel.picture
+                    )
+
+                }
+
+
                 composable(route = "View Authorized") {
                     AuthorizedScreen(
                         listOfAllAuthorized = authorizeUiState.listOfAuthorizedPerson,
@@ -321,6 +374,8 @@ fun SmartDoorbellApp(
 //        }
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

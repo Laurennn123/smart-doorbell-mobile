@@ -29,7 +29,6 @@ class LoginViewModel : ViewModel() {
             email.isNotBlank() && password.isNotBlank()
         }
     }
-
 }
 
 data class LoginUiState(

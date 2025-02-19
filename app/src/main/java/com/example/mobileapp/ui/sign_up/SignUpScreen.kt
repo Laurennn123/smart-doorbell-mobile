@@ -50,8 +50,6 @@ import kotlinx.coroutines.launch
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     signUpViewModel: SignUpViewModel = viewModel()) {
-    val coroutineScope = rememberCoroutineScope()
-
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -76,11 +74,7 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(60.dp))
             SimpleButton(
-                onClick = {
-//                    coroutineScope.launch {
-//                        signUpViewModel.addAccount()
-//                    }
-                },
+                onClick = { signUpViewModel.addAccount() },
                 nameOfButton = stringResource(R.string.sign_up).uppercase(),
                 shape = MaterialTheme.shapes.extraLarge,
                 enabled = signUpViewModel.signUpUiState.isEntryValid

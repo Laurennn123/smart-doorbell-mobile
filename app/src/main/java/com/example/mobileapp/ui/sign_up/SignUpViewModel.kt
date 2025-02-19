@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.Firebase
+import com.google.firebase.database.database
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,9 +21,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class SignUpViewModel() : ViewModel() {
+class SignUpViewModel : ViewModel() {
 //    private val _uiState = MutableStateFlow(SignUpUiState())
 //    val signUpUiState: StateFlow<SignUpUiState> = _uiState.asStateFlow()
+    private val dataBase = Firebase.database
 
     var signUpUiState by mutableStateOf(SignUpUiState())
         private set
@@ -101,11 +104,10 @@ class SignUpViewModel() : ViewModel() {
         )
     }
 
-//    suspend fun addAccount() {
-//        if (validateInput()) {
-//            signUpDao.insertAccount(signUpUiState.signUpDetails.toSignUp())
-//        }
-//    }
+    fun addAccount() {
+        val account = dataBase.getReference("Account")
+        account.setValue(signUpUiState.signUpDetails.fullName)
+    }
 
     private fun validateInput(uiState: SignUpDetails = signUpUiState.signUpDetails):Boolean {
         return with(uiState) {
@@ -127,6 +129,7 @@ class SignUpViewModel() : ViewModel() {
 //            }
 //        }
 //    }
+
 }
 
 data class SignUpUiState (

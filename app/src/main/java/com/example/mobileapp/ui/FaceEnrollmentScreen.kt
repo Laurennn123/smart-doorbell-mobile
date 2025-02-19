@@ -1,9 +1,11 @@
 package com.example.mobileapp.ui
 
+import android.graphics.Bitmap
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
@@ -25,6 +28,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -40,26 +45,38 @@ import com.example.mobileapp.ui.components.IconAppBar
 @Composable
 fun FaceEnrollmentScreen(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    photoTaken: Bitmap?,
 ) {
 
     Column(
         modifier = modifier,
     ) {
         Spacer(modifier = Modifier.height(36.dp))
-        Button(
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .padding(horizontal = dimensionResource(id = R.dimen.padding_extra_small_medium)),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.face_scan_icon),
-                contentDescription = "Camera",
+        // i will have condition here if the bitmap is not null then place it
+        if(photoTaken == null) {
+            Button(
+                onClick = onClick,
                 modifier = Modifier
-                    .size(100.dp)
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(horizontal = dimensionResource(id = R.dimen.padding_extra_small_medium)),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.face_scan_icon),
+                    contentDescription = "Camera",
+                    modifier = Modifier
+                        .size(100.dp)
+                )
+            }
+        } else {
+            Image(
+                bitmap = photoTaken.asImageBitmap(),
+                contentDescription = "Authorized Face",
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(MaterialTheme.shapes.extraLarge)
             )
         }
         DeleteAndResetButtonPic(

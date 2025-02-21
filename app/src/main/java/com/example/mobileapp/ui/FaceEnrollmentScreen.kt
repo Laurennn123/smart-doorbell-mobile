@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
@@ -39,7 +40,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.components.IconAppBar
-
+import com.example.mobileapp.ui.components.SimpleButton
+import com.example.mobileapp.ui.face_enrollment.FaceEnrollmentViewModel
+import com.example.mobileapp.ui.face_enrollment.PersonDetails
 
 
 @Composable
@@ -47,6 +50,11 @@ fun FaceEnrollmentScreen(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     photoTaken: Bitmap?,
+    addPerson: () -> Unit,
+    name: String,
+    relationship: String,
+    faceEnrollment: FaceEnrollmentViewModel,
+    onType: (PersonDetails) -> Unit,
 ) {
 
     Column(
@@ -77,6 +85,7 @@ fun FaceEnrollmentScreen(
                 modifier = Modifier
                     .size(300.dp)
                     .clip(MaterialTheme.shapes.extraLarge)
+                    .align(Alignment.CenterHorizontally)
             )
         }
         DeleteAndResetButtonPic(
@@ -84,7 +93,20 @@ fun FaceEnrollmentScreen(
                 .fillMaxWidth()
                 .padding(end = dimensionResource(R.dimen.padding_medium))
         )
-        NameAndRelationshipField()
+        NameAndRelationshipField(
+            name = name,
+            relationship = relationship,
+            nameOnType = { onType(faceEnrollment.faceUiState.authorizedPerson.copy(name = it)) },
+            relationshipOnType = { onType(faceEnrollment.faceUiState.authorizedPerson.copy(relationship = it)) },
+        )
+        Spacer(modifier = Modifier.height(15.dp))
+        SimpleButton(
+            onClick = addPerson,
+            nameOfButton = "Add Person",
+            shape = MaterialTheme.shapes.extraLarge,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+        )
     }
 }
 
@@ -109,10 +131,15 @@ private fun DeleteAndResetButtonPic(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun NameAndRelationshipField() {
+private fun NameAndRelationshipField(
+    name: String,
+    relationship: String,
+    nameOnType: (String) -> Unit,
+    relationshipOnType: (String) -> Unit,
+) {
     TextField(
-        value = "",
-        onValueChange = { },
+        value = name,
+        onValueChange = { nameOnType(it) },
         label = { Text("Enter Name:") },
         singleLine = true,
         modifier = Modifier
@@ -124,8 +151,8 @@ private fun NameAndRelationshipField() {
     )
     Spacer(modifier = Modifier.height(8.dp))
     TextField(
-        value = "",
-        onValueChange = { },
+        value = relationship,
+        onValueChange = { relationshipOnType(it) },
         label = { Text("Relationship (Optional):") },
         singleLine = true,
         modifier = Modifier

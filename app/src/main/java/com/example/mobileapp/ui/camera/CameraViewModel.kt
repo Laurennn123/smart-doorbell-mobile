@@ -52,4 +52,8 @@ class CameraViewModel : ViewModel() {
         )
     }
 
+    fun removePic() {
+        picture = null
+    }
+
 }

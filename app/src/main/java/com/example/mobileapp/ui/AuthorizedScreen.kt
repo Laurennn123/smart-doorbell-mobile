@@ -1,8 +1,13 @@
 package com.example.mobileapp.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
@@ -12,8 +17,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
 import com.example.mobileapp.model.AuthorizedPerson
@@ -56,11 +65,16 @@ private fun AuthorizedPersonTemplate(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ){
-        ImageContainer(
-            faceImage = authorizedPerson.faceImage,
-            imageSize = 70,
-            contentDescription = authorizedPerson.name
-        )
+        authorizedPerson.faceImage?.let {
+            Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = authorizedPerson.name,
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .size(70.dp),
+                contentScale = ContentScale.Crop,
+            )
+        }
         Text(text = authorizedPerson.name)
         Text(text = authorizedPerson.relationship)
     }
@@ -70,12 +84,12 @@ private fun AuthorizedPersonTemplate(
 @Composable
 fun Test4() {
     MobileAppTheme {
-        AuthorizedPersonTemplate(
-            authorizedPerson = AuthorizedPerson(
-                R.drawable.thomas_si_boss,
-                "Bossing",
-                "Brother"
-            )
-        )
+//        AuthorizedPersonTemplate(
+//            authorizedPerson = AuthorizedPerson(
+//                R.drawable.thomas_si_boss,
+//                "Bossing",
+//                "Brother"
+//            )
+//        )
     }
 }

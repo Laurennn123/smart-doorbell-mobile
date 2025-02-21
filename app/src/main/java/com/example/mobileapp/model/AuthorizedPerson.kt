@@ -1,9 +1,9 @@
 package com.example.mobileapp.model
 
-import androidx.annotation.DrawableRes
+import android.graphics.Bitmap
 
 data class AuthorizedPerson(
-    @DrawableRes val faceImage: Int,
+     val faceImage: Bitmap?,
     val name: String,
     val relationship: String
 )

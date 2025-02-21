@@ -18,11 +18,9 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -36,7 +34,7 @@ fun CameraPreviewScreen(
     navigateUp: () -> Unit,
     photoTaken: Bitmap?
     ) {
-
+    // Complete all the function here such as when the user didn't want the photo taken and when it its want
     Box(
         modifier = modifier
     ) {

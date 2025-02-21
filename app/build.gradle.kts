@@ -65,6 +65,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.kotlinx.coroutines.android)
 //    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.androidx.webkit)
+    implementation(libs.androidx.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

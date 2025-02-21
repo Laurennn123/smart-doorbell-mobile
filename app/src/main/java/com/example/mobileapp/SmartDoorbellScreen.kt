@@ -76,6 +76,7 @@ import com.example.mobileapp.ui.appbar.LogAndSignInBottomBar
 import com.example.mobileapp.ui.camera.CameraPreviewScreen
 import com.example.mobileapp.ui.camera.CameraViewModel
 import com.example.mobileapp.ui.components.IconAppBar
+import com.example.mobileapp.ui.face_enrollment.FaceEnrollmentViewModel
 import com.example.mobileapp.ui.login.LoginScreen
 import com.example.mobileapp.ui.sign_up.SignUpScreen
 import com.example.mobileapp.ui.welcome.WelcomeScreen
@@ -109,7 +110,8 @@ fun SmartDoorbellApp(
     entriesViewModel: EntriesHistoryModel = viewModel(),
     navController: NavHostController = rememberNavController(),
     myAccountModel: MyAccountViewModel = viewModel(),
-    cameraModel: CameraViewModel = viewModel()
+    cameraModel: CameraViewModel = viewModel(),
+    faceEnrollmentModel: FaceEnrollmentViewModel = viewModel()
 ) {
 
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -270,13 +272,13 @@ fun SmartDoorbellApp(
                             navController.navigate(SmartDoorbellScreen.Settings.name)
                         },
                         tryClick = {
-                            authorizeUiState.listOfAuthorizedPerson.add(
-                                AuthorizedPerson(
-                                    faceImage = R.drawable.thomas_si_boss,
-                                    name = "Bossing",
-                                    relationship = "Brother"
-                                )
-                            )
+//                            authorizeUiState.listOfAuthorizedPerson.add(
+//                                AuthorizedPerson(
+//                                    faceImage = R.drawable.thomas_si_boss,
+//                                    name = "Bossing",
+//                                    relationship = "Brother"
+//                                )
+//                            )
                             entriesViewModel.updateTimeAndDate()
                             entriesUiState.listOfEntries.add(
                                 EntriesHistory(
@@ -333,7 +335,23 @@ fun SmartDoorbellApp(
                         onClick = {
                             navController.navigate("Camera Screen")
                         },
-                        photoTaken = cameraModel.picture
+                        photoTaken = cameraModel.picture,
+                        addPerson = {
+                            authorizeUiState.listOfAuthorizedPerson.add(
+                                AuthorizedPerson(
+                                    faceImage = cameraModel.picture,
+                                    name = faceEnrollmentModel.faceUiState.authorizedPerson.name,
+                                    relationship = faceEnrollmentModel.faceUiState.authorizedPerson.relationship
+                                )
+                            )
+                            cameraModel.removePic()
+                            faceEnrollmentModel.reset()
+                            navController.navigateUp()
+                        },
+                        name = faceEnrollmentModel.faceUiState.authorizedPerson.name,
+                        relationship = faceEnrollmentModel.faceUiState.authorizedPerson.relationship,
+                        faceEnrollment = faceEnrollmentModel,
+                        onType = faceEnrollmentModel::updatePersonDetails,
                     )
                 }
 

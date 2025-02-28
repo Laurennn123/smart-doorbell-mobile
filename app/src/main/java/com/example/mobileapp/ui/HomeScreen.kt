@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mobileapp.ESP32VideoStream
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.components.IconAppBar
@@ -41,8 +42,9 @@ import com.example.mobileapp.ui.theme.MobileAppTheme
 
 @Composable
 fun HomeScreen(
-    onClick: () -> Unit,
+//    onClick: () -> Unit,
     tryClick: () -> Unit,
+    onClickEnter: () -> Unit,
     homeViewModel: HomeScreenModel = viewModel(),
     modifier: Modifier = Modifier) {
     val homeUiState by homeViewModel.uiState.collectAsState()
@@ -56,16 +58,16 @@ fun HomeScreen(
             onClick = tryClick,
             contentDescription = "Try"
         )
-        RecentNotification(
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .size(60.dp)
-        )
+//        RecentNotification(
+//            onClick = onClick,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .size(60.dp)
+//        )
         Camera(modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
-            .height(120.dp))
+            .height(300.dp))
         Actions(
             onClickAlarm = {
                 // example that it should automated
@@ -81,7 +83,7 @@ fun HomeScreen(
             messageValue = homeViewModel.userMessage,
             userMessage = { homeViewModel.updateMessage(it) },
             onClickClear = { homeViewModel.clearMessage() },
-            onClickEnter = { },
+            onClickEnter = onClickEnter,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
@@ -127,7 +129,7 @@ private fun RecentNotification(
 @Composable
 private fun Camera(modifier: Modifier = Modifier) {
     Text(
-        text = stringResource(id = R.string.camera),
+        text = stringResource(id = R.string.live_view_stream),
         style = MaterialTheme.typography.displayMedium,
         modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_small))
     )
@@ -135,12 +137,14 @@ private fun Camera(modifier: Modifier = Modifier) {
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        SimpleButton(
-            onClick = { },
-            nameOfButton = stringResource(id = R.string.live_view),
-            shape = MaterialTheme.shapes.extraLarge,
-            modifier = Modifier
-        )
+        ESP32VideoStream()
+
+//        SimpleButton(
+//            onClick = { },
+//            nameOfButton = stringResource(id = R.string.live_view),
+//            shape = MaterialTheme.shapes.extraLarge,
+//            modifier = Modifier
+//        )
     }
 }
 

@@ -2,6 +2,8 @@ package com.example.mobileapp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -46,6 +48,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.movableContentOf
@@ -61,6 +64,7 @@ import com.example.mobileapp.model.AuthorizedPerson
 import com.example.mobileapp.model.AuthorizedPersonModel
 import com.example.mobileapp.model.EntriesHistory
 import com.example.mobileapp.model.EntriesHistoryModel
+import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.AuthorizedScreen
 import com.example.mobileapp.ui.EntriesHistoryScreen
 import com.example.mobileapp.ui.FaceEnrollmentAddOrView
@@ -83,6 +87,7 @@ import com.example.mobileapp.ui.welcome.WelcomeScreen
 import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.database
 
 
 enum class SmartDoorbellScreen {
@@ -102,6 +107,7 @@ enum class SettingsScreen {
     `My Account`
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 fun SmartDoorbellApp(
     controller: LifecycleCameraController,
@@ -111,30 +117,32 @@ fun SmartDoorbellApp(
     navController: NavHostController = rememberNavController(),
     myAccountModel: MyAccountViewModel = viewModel(),
     cameraModel: CameraViewModel = viewModel(),
-    faceEnrollmentModel: FaceEnrollmentViewModel = viewModel()
+    faceEnrollmentModel: FaceEnrollmentViewModel = viewModel(),
+    homeViewModel: HomeScreenModel = viewModel()
 ) {
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val accountUiState by myAccountModel.accountUiState.collectAsState()
     val currentScreen = backStackEntry?.destination?.route
     var settingsSelect by rememberSaveable { mutableStateOf("") }
+    val homeUiState by homeViewModel.uiState.collectAsState()
 
     Scaffold(
-//        topBar = {
-//            if (currentScreen == SmartDoorbellScreen.Home.name) {
-//                HomeScreenAppBar()
-//            } else {
-//                BackAndUserAppBar(
-//                    navigateUp = {
-//                        if (currentScreen == "View Authorized" || currentScreen == "Add New") {
-//                            navController.popBackStack(route = SmartDoorbellScreen.Settings.name, false)
-//                        } else {
-//                            navController.navigateUp()
-//                        }
-//                    }
-//                )
-//            }
-//        },
+        topBar = {
+            if (currentScreen == SmartDoorbellScreen.Home.name) {
+                HomeScreenAppBar()
+            } else {
+                BackAndUserAppBar(
+                    navigateUp = {
+                        if (currentScreen == "View Authorized" || currentScreen == "Add New") {
+                            navController.popBackStack(route = SmartDoorbellScreen.Settings.name, false)
+                        } else {
+                            navController.navigateUp()
+                        }
+                    }
+                )
+            }
+        },
 //        bottomBar = {
 //            LogAndSignInBottomBar()
 //        },
@@ -181,7 +189,6 @@ fun SmartDoorbellApp(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                            .statusBarsPadding()
                     )
                     if(myAccountModel.userButtonDetailClicked) {
                         val buttonClicked = myAccountModel.buttonClicked
@@ -259,39 +266,53 @@ fun SmartDoorbellApp(
                     AboutUsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .statusBarsPadding()
                             .fillMaxSize()
                             .padding(horizontal = dimensionResource(R.dimen.padding_medium))
                     )
                 }
 
                 composable(route = SmartDoorbellScreen.Home.name) {
+                    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                    var bluetoothSocket: BluetoothSocket? = null
 
                     HomeScreen(
-                        onClick = {
-                            navController.navigate(SmartDoorbellScreen.Settings.name)
-                        },
-                        tryClick = {
-//                            authorizeUiState.listOfAuthorizedPerson.add(
-//                                AuthorizedPerson(
+//                        onClick = {
+//                            navController.navigate(SmartDoorbellScreen.Settings.name)
+//                        },
+//                        tryClick = {
+////                            authorizeUiState.listOfAuthorizedPerson.add(
+////                                AuthorizedPerson(
+////                                    faceImage = R.drawable.thomas_si_boss,
+////                                    name = "Bossing",
+////                                    relationship = "Brother"
+////                                )
+////                            )
+//                            entriesViewModel.updateTimeAndDate()
+//                            entriesUiState.listOfEntries.add(
+//                                EntriesHistory(
 //                                    faceImage = R.drawable.thomas_si_boss,
 //                                    name = "Bossing",
-//                                    relationship = "Brother"
+//                                    date = entriesViewModel.currentDate,
+//                                    time = entriesViewModel.currentTime
 //                                )
 //                            )
-                            entriesViewModel.updateTimeAndDate()
-                            entriesUiState.listOfEntries.add(
-                                EntriesHistory(
-                                    faceImage = R.drawable.thomas_si_boss,
-                                    name = "Bossing",
-                                    date = entriesViewModel.currentDate,
-                                    time = entriesViewModel.currentTime
-                                )
-                            )
-                        },
+//                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                            .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                        tryClick = {
+                            val database = Firebase.database
+                            val myRef = database.getReference("message")
+
+                            myRef.setValue("Hello, World!")
+                        },
+                        onClickEnter = {
+                            val device = bluetoothAdapter?.bondedDevices?.find { it.name == "ESP32_LCD" }
+                            if (device != null) {
+                                bluetoothSocket = homeViewModel.connectToESP32(device)
+                                homeViewModel.sendTextToESP32(socket = bluetoothSocket, message = homeViewModel.userMessage)
+                            }
+                        }
                     )
                 }
 
@@ -439,7 +460,7 @@ private fun HomeScreenAppBar(modifier: Modifier = Modifier) {
         actions = {
             Row {
                 IconAppBar(
-                    icon = Icons.Filled.Menu,
+                    icon = Icons.Filled.Settings,
                     onClick = {},
                     contentDescription = stringResource(id = R.string.menu),
                 )

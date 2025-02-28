@@ -21,11 +21,14 @@ import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -54,18 +57,18 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    ESP32VideoStream()
-//                    SmartDoorbellApp(
-//                        controller = controller,
-//                        context = applicationContext
-//                    )
+//                    ESP32VideoStream()
+                    SmartDoorbellApp(
+                        controller = controller,
+                        context = applicationContext
+                    )
                 }
             }
         }
     }
 
 
-
+    // know how to bluetooth permission
     private fun hasRequiredPermissions(): Boolean {
         return CAMERAX_PERMISSIONS.all {
             ContextCompat.checkSelfPermission(
@@ -87,7 +90,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ESP32VideoStream() {
     AndroidView(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
@@ -96,9 +101,19 @@ fun ESP32VideoStream() {
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
                 settings.builtInZoomControls = false  // Disable zoom controls
                 settings.displayZoomControls = false
-                webViewClient = WebViewClient()
-                loadUrl("") // INSERT THE URL HERE OF THE ESP 32 CAM
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        view?.evaluateJavascript("""
+                            (function() {
+                                document.body.style.height = "300px";  
+                                document.body.style.overflow = "hidden"; 
+                                document.documentElement.style.overflow = "hidden";
+                            })();
+                        """.trimIndent(), null)
+                    }
+                }
+                loadUrl("https://www.google.com/") // INSERT THE URL HERE OF THE ESP 32 CAM
             }
-        }
+        },
     )
 }

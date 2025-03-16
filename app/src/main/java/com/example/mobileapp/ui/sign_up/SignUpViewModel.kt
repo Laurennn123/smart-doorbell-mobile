@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.mobileapp.data.repo.AccountRepository
+import com.example.mobileapp.data.table.Account
 import com.google.firebase.Firebase
 import com.google.firebase.database.database
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +23,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class SignUpViewModel : ViewModel() {
+class SignUpViewModel(private val accountRepository: AccountRepository) : ViewModel() {
 //    private val _uiState = MutableStateFlow(SignUpUiState())
 //    val signUpUiState: StateFlow<SignUpUiState> = _uiState.asStateFlow()
-    private val dataBase = Firebase.database
+//    private val dataBase = Firebase.database
 
     var signUpUiState by mutableStateOf(SignUpUiState())
         private set
@@ -43,6 +45,12 @@ class SignUpViewModel : ViewModel() {
 
     fun updateDate(newDate: String) {
         date = newDate
+    }
+
+    suspend fun addAccount() {
+        if (validateInput()) {
+            accountRepository.createAccount(signUpUiState.signUpDetails.toAccount())
+        }
     }
 
    @OptIn(ExperimentalMaterial3Api::class)
@@ -104,11 +112,6 @@ class SignUpViewModel : ViewModel() {
         )
     }
 
-    fun addAccount() {
-        val account = dataBase.getReference("Account")
-        account.setValue(signUpUiState.signUpDetails.fullName)
-    }
-
     private fun validateInput(uiState: SignUpDetails = signUpUiState.signUpDetails):Boolean {
         return with(uiState) {
             fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank()
@@ -147,12 +150,12 @@ data class SignUpDetails(
     val gender: String = ""
 )
 
-//fun SignUpDetails.toSignUp(): SignUp = SignUp(
-//    id = id,
-//    fullName = fullName,
-//    email = email,
-//    password = password,
-//    reEnterPassword = reEnterPassword,
-//    dateOfBirth = dateOfBirth,
-//    gender = gender
-//)
+fun SignUpDetails.toAccount(): Account = Account(
+    id = id,
+    fullName = fullName,
+    email = email,
+    password = password,
+    reEnterPassword = reEnterPassword,
+    dateOfBirth = dateOfBirth,
+    gender = gender
+)

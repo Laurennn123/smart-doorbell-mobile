@@ -12,7 +12,10 @@ import com.example.mobileapp.data.HomeUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
 import java.io.IOException
+import java.net.URI
 import java.util.UUID
 
 class HomeScreenModel : ViewModel() {
@@ -32,21 +35,33 @@ class HomeScreenModel : ViewModel() {
         userMessage = ""
     }
 
-    @SuppressLint("MissingPermission")
-    fun connectToESP32(device: BluetoothDevice): BluetoothSocket? {
-        return try {
-            val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-            val socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
-            socket.connect()
-            socket
-        } catch (e: IOException) {
-            Log.e("Bluetooth", "Connection failed", e)
-            null
+    var webSocket: WebSocketClient? = null
+
+    fun connectToESP32() {
+        val uri = URI("ws://192.168.1.14:81") // Replace with ESP32 IP
+        webSocket = object : WebSocketClient(uri) {
+            override fun onOpen(handshakedata: ServerHandshake?) {
+                println("Connected to ESP32")
+            }
+            override fun onMessage(message: String?) {}
+            override fun onClose(code: Int, reason: String?, remote: Boolean) {}
+            override fun onError(ex: Exception?) {}
         }
+        webSocket?.connect()
     }
 
-    fun sendTextToESP32(socket: BluetoothSocket?, message: String) {
-        socket?.outputStream?.write(message.toByteArray())
+    fun sendTextToESP32(text: String) {
+        if (webSocket == null || !webSocket!!.isOpen) {
+            println("WebSocket is not connected! Trying to connect...")
+            connectToESP32()
+            Thread.sleep(3000) // Wait 3 seconds for connection
+        }
+        if (webSocket!!.isOpen) {
+            webSocket?.send(text)
+            println("Sent: $text")
+        } else {
+            println("WebSocket failed to connect!")
+        }
     }
 
 

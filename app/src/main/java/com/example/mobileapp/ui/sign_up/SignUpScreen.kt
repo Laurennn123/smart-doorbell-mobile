@@ -42,14 +42,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
+import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
+import com.example.mobileapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+
+object SignUpDestination : NavigationDestination {
+    override val route = "SignUp"
+}
 
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
-    signUpViewModel: SignUpViewModel = viewModel()) {
+    navigateBack: () -> Unit,
+    signUpViewModel: SignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -74,7 +84,12 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(60.dp))
             SimpleButton(
-                onClick = { signUpViewModel.addAccount() },
+                onClick = {
+                    coroutineScope.launch {
+                        signUpViewModel.addAccount()
+                        navigateBack()
+                    }
+                },
                 nameOfButton = stringResource(R.string.sign_up).uppercase(),
                 shape = MaterialTheme.shapes.extraLarge,
                 enabled = signUpViewModel.signUpUiState.isEntryValid

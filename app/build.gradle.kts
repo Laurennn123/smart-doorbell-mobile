@@ -2,7 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.google.gms.google.services)
+    id("com.google.devtools.ksp") version "2.1.10-1.0.29"
 }
 
 android {
@@ -65,8 +66,13 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.kotlinx.coroutines.android)
 //    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.java.websocket)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.storage)
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

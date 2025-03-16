@@ -57,11 +57,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-//                    ESP32VideoStream()
-                    SmartDoorbellApp(
-                        controller = controller,
-                        context = applicationContext
-                    )
+                    SmartEntryApp()
                 }
             }
         }

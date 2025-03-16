@@ -14,6 +14,8 @@ import com.example.mobileapp.R
 import com.example.mobileapp.SmartDoorbellScreen
 import com.example.mobileapp.ui.login.LoginDestination
 import com.example.mobileapp.ui.login.LoginScreen
+import com.example.mobileapp.ui.sign_up.SignUpDestination
+import com.example.mobileapp.ui.sign_up.SignUpScreen
 import com.example.mobileapp.ui.welcome.WelcomeDestination
 import com.example.mobileapp.ui.welcome.WelcomeScreen
 
@@ -23,7 +25,7 @@ fun SmartDoorBellNavHost(
     modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = WelcomeDestination.route,
+        startDestination = SignUpDestination.route,
         modifier = modifier
     ) {
         composable(route = WelcomeDestination.route) {
@@ -42,7 +44,18 @@ fun SmartDoorBellNavHost(
                     .fillMaxWidth()
                     .fillMaxSize()
                     .statusBarsPadding(),
-                onLoginClick = { navController.navigate(route = SmartDoorbellScreen.AboutUs.name) }
+                onLoginClick = { },
+                onSignUpClick = { navController.navigate(route = SignUpDestination.route) }
+            )
+        }
+
+        composable(route = SignUpDestination.route) {
+            SignUpScreen(
+                navigateBack = { navController.popBackStack() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxSize()
+                    .statusBarsPadding()
             )
         }
 

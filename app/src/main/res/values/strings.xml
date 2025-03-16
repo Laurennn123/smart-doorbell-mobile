@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Smart Doorbell</string>
+    <string name="app_name">Smart Entry</string>
     <string name="live_view_stream">Live View</string>
     <string name="settings">Settings</string>
     <string name="my_account">My Account</string>

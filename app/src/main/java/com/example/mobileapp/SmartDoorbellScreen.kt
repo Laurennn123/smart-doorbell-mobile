@@ -82,6 +82,7 @@ import com.example.mobileapp.ui.camera.CameraViewModel
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.face_enrollment.FaceEnrollmentViewModel
 import com.example.mobileapp.ui.login.LoginScreen
+import com.example.mobileapp.ui.navigation.SmartDoorBellNavHost
 import com.example.mobileapp.ui.sign_up.SignUpScreen
 import com.example.mobileapp.ui.welcome.WelcomeScreen
 import com.google.firebase.Firebase
@@ -105,6 +106,11 @@ enum class SettingsScreen {
     `Face Enrollment`,
     `About Us`,
     `My Account`
+}
+
+@Composable
+fun SmartEntryApp(navController: NavHostController = rememberNavController()) {
+    SmartDoorBellNavHost(navController = navController)
 }
 
 @SuppressLint("MissingPermission")
@@ -249,7 +255,8 @@ fun SmartDoorbellApp(
                             .statusBarsPadding(),
                         onLoginClick = {
                             navController.navigate(route = SmartDoorbellScreen.AboutUs.name)
-                        }
+                        },
+                        onSignUpClick = {}
                     )
                 }
 
@@ -258,7 +265,8 @@ fun SmartDoorbellApp(
                         modifier = Modifier
                             .fillMaxWidth()
                             .statusBarsPadding()
-                            .fillMaxSize()
+                            .fillMaxSize(),
+                        navigateBack = {}
                     )
                 }
 
@@ -306,13 +314,7 @@ fun SmartDoorbellApp(
 
                             myRef.setValue("Hello, World!")
                         },
-                        onClickEnter = {
-                            val device = bluetoothAdapter?.bondedDevices?.find { it.name == "ESP32_LCD" }
-                            if (device != null) {
-                                bluetoothSocket = homeViewModel.connectToESP32(device)
-                                homeViewModel.sendTextToESP32(socket = bluetoothSocket, message = homeViewModel.userMessage)
-                            }
-                        }
+                        onClickEnter = { homeViewModel.sendTextToESP32(text = homeViewModel.userMessage) }
                     )
                 }
 

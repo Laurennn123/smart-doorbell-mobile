@@ -85,10 +85,12 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(60.dp))
             SimpleButton(
                 onClick = {
-                    coroutineScope.launch {
-                        signUpViewModel.addAccount()
-                        navigateBack()
-                    }
+//                    coroutineScope.launch {
+//                        signUpViewModel.addAccount()
+//                        navigateBack()
+//                    }
+                    signUpViewModel.addAccountCloud()
+                    navigateBack()
                 },
                 nameOfButton = stringResource(R.string.sign_up).uppercase(),
                 shape = MaterialTheme.shapes.extraLarge,
@@ -97,7 +99,7 @@ fun SignUpScreen(
         }
         Spacer(modifier = Modifier.height(100.dp))
         SimpleButton(
-            onClick = {},
+            onClick = { navigateBack() },
             nameOfButton = stringResource(R.string.login).uppercase(),
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier

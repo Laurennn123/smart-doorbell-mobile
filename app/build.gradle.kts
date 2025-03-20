@@ -64,6 +64,8 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.firebase.database)
     implementation(platform(libs.firebase.bom))
+    implementation(libs.google.firebase.firestore)
+    implementation(libs.firebase.auth)
     implementation(libs.kotlinx.coroutines.android)
 //    implementation(libs.firebase.analytics.ktx)
     implementation(libs.java.websocket)
@@ -72,6 +74,8 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.firebase.storage)
+    implementation(libs.androidx.media3.common.ktx)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

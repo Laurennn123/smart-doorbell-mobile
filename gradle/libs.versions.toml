@@ -1,5 +1,7 @@
 [versions]
 agp = "8.7.3"
+firebaseAuth = "23.2.0"
+firebaseFirestore = "25.1.2"
 javaWebsocket = "1.5.2"
 kotlin = "2.1.10"
 coreKtx = "1.15.0"
@@ -34,12 +36,16 @@ googleGmsGoogleServices = "4.4.2"
 webkit = "1.13.0"
 storage = "1.5.0"
 devToolsKsp = "2.1.10-1.0.29"
+firebaseStorage = "21.0.1"
+media3CommonKtx = "1.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
+firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
+google-firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
 java-websocket = { module = "org.java-websocket:Java-WebSocket", version.ref = "javaWebsocket" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -70,6 +76,8 @@ firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analy
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 androidx-storage = { group = "androidx.test.services", name = "storage", version.ref = "storage" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

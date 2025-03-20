@@ -79,17 +79,3 @@ private fun AuthorizedPersonTemplate(
         Text(text = authorizedPerson.relationship)
     }
 }
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
-@Composable
-fun Test4() {
-    MobileAppTheme {
-//        AuthorizedPersonTemplate(
-//            authorizedPerson = AuthorizedPerson(
-//                R.drawable.thomas_si_boss,
-//                "Bossing",
-//                "Brother"
-//            )
-//        )
-    }
-}

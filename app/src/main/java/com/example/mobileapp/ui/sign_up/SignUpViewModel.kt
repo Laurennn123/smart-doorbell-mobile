@@ -1,32 +1,28 @@
 package com.example.mobileapp.ui.sign_up
 
+import android.annotation.SuppressLint
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.media3.common.util.UnstableApi
 import com.example.mobileapp.data.repo.AccountRepository
 import com.example.mobileapp.data.table.Account
 import com.google.firebase.Firebase
-import com.google.firebase.database.database
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class SignUpViewModel(private val accountRepository: AccountRepository) : ViewModel() {
-//    private val _uiState = MutableStateFlow(SignUpUiState())
-//    val signUpUiState: StateFlow<SignUpUiState> = _uiState.asStateFlow()
-//    private val dataBase = Firebase.database
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        private val database = Firebase.firestore
+        lateinit var auth: FirebaseAuth
+    }
 
     var signUpUiState by mutableStateOf(SignUpUiState())
         private set
@@ -45,6 +41,26 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
 
     fun updateDate(newDate: String) {
         date = newDate
+    }
+
+    @androidx.annotation.OptIn(UnstableApi::class)
+    fun addAccountCloud() {
+        auth = FirebaseAuth.getInstance()
+        val account = hashMapOf(
+            "Full Name" to signUpUiState.signUpDetails.fullName,
+            "Email" to signUpUiState.signUpDetails.email,
+            "Password" to signUpUiState.signUpDetails.password,
+            "Birth Date" to date,
+            "Gender" to gender
+        )
+        auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password)
+        database.collection("Account").document(signUpUiState.signUpDetails.fullName).set(account)
+//        database.collection("Account").get()
+//            .addOnSuccessListener { result ->
+//                for (document in result) {
+//                    Log.d(TAG, "${document.id} => ${document.data}")
+//                }
+//            }
     }
 
     suspend fun addAccount() {
@@ -123,15 +139,6 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
         val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         return formatter.format(Date(millis))
     }
-
-//    companion object {
-//        val factory : ViewModelProvider.Factory = viewModelFactory {
-//            initializer {
-//                val application = (this[APPLICATION_KEY] as SmartDoorbellApplication)
-//                SignUpViewModel(application.database.signUpDao())
-//            }
-//        }
-//    }
 
 }
 

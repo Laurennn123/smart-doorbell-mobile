@@ -93,11 +93,3 @@ private fun EntriesCard(
         }
     }
 }
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
-@Composable
-fun Test3() {
-    MobileAppTheme {
-
-    }
-}

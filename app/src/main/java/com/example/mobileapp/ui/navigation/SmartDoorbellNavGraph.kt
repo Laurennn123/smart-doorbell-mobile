@@ -11,7 +11,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.mobileapp.R
-import com.example.mobileapp.SmartDoorbellScreen
 import com.example.mobileapp.ui.login.LoginDestination
 import com.example.mobileapp.ui.login.LoginScreen
 import com.example.mobileapp.ui.sign_up.SignUpDestination
@@ -25,7 +24,7 @@ fun SmartDoorBellNavHost(
     modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = SignUpDestination.route,
+        startDestination = WelcomeDestination.route,
         modifier = modifier
     ) {
         composable(route = WelcomeDestination.route) {

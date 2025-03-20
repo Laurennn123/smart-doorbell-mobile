@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -54,7 +55,9 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color(0xFF006663))
+            .background(brush = Brush.linearGradient(
+                colors = listOf(Color(0xFF77C89D), Color(0xFF006663)
+                )))
     ) {
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
@@ -109,6 +112,7 @@ fun LoginScreen(
                             )
                         }
                 )
+                Spacer(modifier = Modifier.height(40.dp))
                 SimpleButton(
                     onClick = onLoginClick,
                     nameOfButton = stringResource(id = R.string.login).uppercase(),
@@ -121,6 +125,7 @@ fun LoginScreen(
                 onClick = onSignUpClick,
                 nameOfButton = stringResource(id = R.string.sign_up).uppercase(),
                 shape = RoundedCornerShape(0.dp),
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

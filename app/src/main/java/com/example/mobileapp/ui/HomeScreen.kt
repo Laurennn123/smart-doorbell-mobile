@@ -38,15 +38,22 @@ import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.components.SimpleButton
+import com.example.mobileapp.ui.navigation.NavigationDestination
 import com.example.mobileapp.ui.theme.MobileAppTheme
+
+object HomeScreenDestination : NavigationDestination {
+    override val route = "HomeScreen"
+}
 
 @Composable
 fun HomeScreen(
 //    onClick: () -> Unit,
+    nameOwner: String,
     tryClick: () -> Unit,
     onClickEnter: () -> Unit,
     homeViewModel: HomeScreenModel = viewModel(),
     modifier: Modifier = Modifier) {
+
     val homeUiState by homeViewModel.uiState.collectAsState()
 
     Column(
@@ -80,7 +87,7 @@ fun HomeScreen(
             onClickDoor = {}
         )
         MessagePanel(
-            messageValue = homeViewModel.userMessage,
+            messageValue = nameOwner,
             userMessage = { homeViewModel.updateMessage(it) },
             onClickClear = { homeViewModel.clearMessage() },
             onClickEnter = onClickEnter,

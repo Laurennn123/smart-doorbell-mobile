@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -38,6 +39,8 @@ import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.components.UserInput
 import com.example.mobileapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
+import kotlin.math.log
 
 object LoginDestination : NavigationDestination {
     override val route = "Login"
@@ -46,18 +49,23 @@ object LoginDestination : NavigationDestination {
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginClick: () -> Unit,
+    navigateToHomeScreen: (String) -> Unit,
     onSignUpClick: () -> Unit,
     loginViewModel: LoginViewModel = viewModel()
 ) {
     val loginState by loginViewModel.loginUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = Brush.linearGradient(
-                colors = listOf(Color(0xFF77C89D), Color(0xFF006663)
-                )))
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF77C89D), Color(0xFF006663)
+                    )
+                )
+            )
     ) {
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
@@ -98,9 +106,13 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
                     text = stringResource(id = R.string.forgot_password),
-                    modifier = Modifier.clickable {
-
-                    }.align(alignment = Alignment.End)
+                    modifier = Modifier
+                        .clickable {
+                            coroutineScope.launch {
+                                loginViewModel.sendPasswordResetEmail()
+                            }
+                        }
+                        .align(alignment = Alignment.End)
                         .drawBehind {
                             val strokeWidthPx = 1.dp.toPx()
                             val verticalOffset = size.height - 2.sp.toPx()
@@ -114,7 +126,13 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(40.dp))
                 SimpleButton(
-                    onClick = onLoginClick,
+                    onClick = {
+                        coroutineScope.launch {
+                            if (loginViewModel.isEmailPassRegistered()) {
+                                launch { navigateToHomeScreen(loginViewModel.getFullName()) }
+                            }
+                        }
+                    },
                     nameOfButton = stringResource(id = R.string.login).uppercase(),
                     shape = MaterialTheme.shapes.extraLarge,
                     enabled = loginState.isEntryValid

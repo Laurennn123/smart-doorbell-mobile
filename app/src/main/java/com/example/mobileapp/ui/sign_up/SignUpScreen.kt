@@ -46,6 +46,7 @@ import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 object SignUpDestination : NavigationDestination {
@@ -85,10 +86,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(60.dp))
             SimpleButton(
                 onClick = {
-//                    coroutineScope.launch {
-//                        signUpViewModel.addAccount()
-//                        navigateBack()
-//                    }
+                    signUpViewModel.addAccountCloudInformation()
                     signUpViewModel.addAccountCloud()
                     navigateBack()
                 },

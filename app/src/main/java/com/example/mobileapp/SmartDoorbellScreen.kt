@@ -248,16 +248,16 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SmartDoorbellScreen.Login.name) {
-                    LoginScreen(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxSize()
-                            .statusBarsPadding(),
-                        onLoginClick = {
-                            navController.navigate(route = SmartDoorbellScreen.AboutUs.name)
-                        },
-                        onSignUpClick = {}
-                    )
+//                    LoginScreen(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .fillMaxSize()
+//                            .statusBarsPadding(),
+//                        navigateToHomeScreen = {
+//                            navController.navigate(route = SmartDoorbellScreen.AboutUs.name)
+//                        },
+//                        onSignUpClick = {}
+//                    )
                 }
 
                 composable(route = SmartDoorbellScreen.SignUp.name) {
@@ -283,7 +283,7 @@ fun SmartDoorbellApp(
                     val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
                     var bluetoothSocket: BluetoothSocket? = null
 
-                    HomeScreen(
+//                    HomeScreen(
 //                        onClick = {
 //                            navController.navigate(SmartDoorbellScreen.Settings.name)
 //                        },
@@ -305,17 +305,18 @@ fun SmartDoorbellApp(
 //                                )
 //                            )
 //                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-                        tryClick = {
-                            val database = Firebase.database
-                            val myRef = database.getReference("message")
-
-                            myRef.setValue("Hello, World!")
-                        },
-                        onClickEnter = { homeViewModel.sendTextToESP32(text = homeViewModel.userMessage) }
-                    )
+//                        nameOwner = "",
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+//                        tryClick = {
+//                            val database = Firebase.database
+//                            val myRef = database.getReference("message")
+//
+//                            myRef.setValue("Hello, World!")
+//                        },
+//                        onClickEnter = { homeViewModel.sendTextToESP32(text = homeViewModel.userMessage) }
+//                    )
                 }
 
                 composable(route = SmartDoorbellScreen.Settings.name) {

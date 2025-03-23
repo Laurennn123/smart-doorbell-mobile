@@ -7,12 +7,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.mobileapp.data.repo.AccountRepository
 import com.example.mobileapp.data.table.Account
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -46,6 +51,11 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
     @androidx.annotation.OptIn(UnstableApi::class)
     fun addAccountCloud() {
         auth = FirebaseAuth.getInstance()
+        auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password)
+    }
+
+    @androidx.annotation.OptIn(UnstableApi::class)
+    fun addAccountCloudInformation() {
         val account = hashMapOf(
             "Full Name" to signUpUiState.signUpDetails.fullName,
             "Email" to signUpUiState.signUpDetails.email,
@@ -53,20 +63,9 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
             "Birth Date" to date,
             "Gender" to gender
         )
-        auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password)
-        database.collection("Account").document(signUpUiState.signUpDetails.fullName).set(account)
-//        database.collection("Account").get()
-//            .addOnSuccessListener { result ->
-//                for (document in result) {
-//                    Log.d(TAG, "${document.id} => ${document.data}")
-//                }
-//            }
-    }
-
-    suspend fun addAccount() {
-        if (validateInput()) {
-            accountRepository.createAccount(signUpUiState.signUpDetails.toAccount())
-        }
+        val TAG = "database"
+        database.collection("Account").document(signUpUiState.signUpDetails.email).set(account)
+            .addOnSuccessListener { Log.d(TAG, "sucess") }.addOnFailureListener { e-> Log.d(TAG, "failed", e) }
     }
 
    @OptIn(ExperimentalMaterial3Api::class)

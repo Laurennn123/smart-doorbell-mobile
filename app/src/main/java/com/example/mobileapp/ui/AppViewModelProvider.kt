@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.mobileapp.SmartDoorbellApplication
+import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.sign_up.SignUpViewModel
 
@@ -12,6 +13,7 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer { SignUpViewModel(smartDoorbellApplication().container.accountRepository) }
         initializer { LoginViewModel() }
+        initializer { HomeScreenModel() }
     }
 }
 

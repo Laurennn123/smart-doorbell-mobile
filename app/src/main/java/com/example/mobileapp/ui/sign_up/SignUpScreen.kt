@@ -46,8 +46,11 @@ import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object SignUpDestination : NavigationDestination {
     override val route = "SignUp"
@@ -86,9 +89,15 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(60.dp))
             SimpleButton(
                 onClick = {
-                    signUpViewModel.addAccountCloudInformation()
-                    signUpViewModel.addAccountCloud()
-                    navigateBack()
+                    coroutineScope.launch {
+                        signUpViewModel.addAccountCloud()
+                        signUpViewModel.addAccountCloudInformation()
+                        signUpViewModel.addLocalAccount()
+                        withContext(Dispatchers.Main) {
+                            navigateBack()
+                        }
+                    }
+
                 },
                 nameOfButton = stringResource(R.string.sign_up).uppercase(),
                 shape = MaterialTheme.shapes.extraLarge,

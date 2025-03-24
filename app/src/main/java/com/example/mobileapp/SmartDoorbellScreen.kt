@@ -169,15 +169,15 @@ fun SmartDoorbellApp(
                 modifier =  Modifier.padding(innerPadding)
             ) {
                 composable(route = SmartDoorbellScreen.Welcome.name) {
-                    WelcomeScreen(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                            .fillMaxSize(),
-                        onClickContinue = {
-                            navController.navigate(route = SmartDoorbellScreen.Login.name)
-                        }
-                    )
+//                    WelcomeScreen(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+//                            .fillMaxSize(),
+//                        onClickContinue = {
+//                            navController.navigate(route = SmartDoorbellScreen.Login.name)
+//                        }
+//                    )
                 }
 
                 composable(route = SettingsScreen.`My Account`.name) {

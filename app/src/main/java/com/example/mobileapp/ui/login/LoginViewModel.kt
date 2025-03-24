@@ -3,22 +3,34 @@ package com.example.mobileapp.ui.login
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.annotation.OptIn
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import com.example.mobileapp.data.repo.AccountRepository
+import com.example.mobileapp.data.repo.UserStatusRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(
+    private val accountRepository: AccountRepository,
+    private val userStatusRepository: UserStatusRepository
+) : ViewModel() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         private val database = Firebase.firestore
@@ -27,10 +39,24 @@ class LoginViewModel : ViewModel() {
 
     private var _loginUiState = MutableStateFlow(LoginUiState())
 
+    val userState: StateFlow<UserStatusState> =
+        userStatusRepository.isUserLoggedIn.map { isUserLogIn ->
+            UserStatusState(isUserLogIn)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = UserStatusState()
+        )
     val loginUiState: StateFlow<LoginUiState> = _loginUiState.asStateFlow()
 
     var isIconPassClicked by mutableStateOf(false)
         private set
+
+    fun userStatusLogIn(isUserLogIn: Boolean) {
+        viewModelScope.launch {
+            userStatusRepository.saveUserLoggedIn(isUserLogIn)
+        }
+    }
 
     @OptIn(UnstableApi::class)
     suspend fun isEmailPassRegistered(): Boolean {
@@ -68,6 +94,9 @@ class LoginViewModel : ViewModel() {
         return fullName
     }
 
+    fun getLocalName(email: String = _loginUiState.value.loginDetails.email)
+    : Flow<String> = accountRepository.getName(email)
+
     @OptIn(UnstableApi::class)
     suspend fun sendPasswordResetEmail() {
         val TAG = "database"
@@ -93,6 +122,10 @@ class LoginViewModel : ViewModel() {
         }
     }
 }
+
+data class UserStatusState(
+    val isUserLoggedIn: Boolean = false
+)
 
 data class LoginUiState(
     val loginDetails: LoginUiDetails = LoginUiDetails(),

@@ -49,13 +49,15 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
     }
 
     @androidx.annotation.OptIn(UnstableApi::class)
-    fun addAccountCloud() {
+    suspend fun addAccountCloud() {
+        val TAG = "database"
         auth = FirebaseAuth.getInstance()
         auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password)
+            .addOnSuccessListener { Log.d(TAG, "sucess2")   }.addOnFailureListener { e-> Log.d(TAG, "failed", e)  }.await()
     }
 
     @androidx.annotation.OptIn(UnstableApi::class)
-    fun addAccountCloudInformation() {
+    suspend fun addAccountCloudInformation() {
         val account = hashMapOf(
             "Full Name" to signUpUiState.signUpDetails.fullName,
             "Email" to signUpUiState.signUpDetails.email,
@@ -65,7 +67,17 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
         )
         val TAG = "database"
         database.collection("Account").document(signUpUiState.signUpDetails.email).set(account)
-            .addOnSuccessListener { Log.d(TAG, "sucess") }.addOnFailureListener { e-> Log.d(TAG, "failed", e) }
+            .addOnSuccessListener { Log.d(TAG, "sucess") }.addOnFailureListener { e-> Log.d(TAG, "failed", e) }.await()
+    }
+
+    suspend fun addLocalAccount() {
+        if(validateInput()) {
+            accountRepository.createAccount(signUpUiState.signUpDetails.toAccount())
+        }
+    }
+    // sjjsjsjjsj@gmail.com
+    fun isLoggedIn(email: String): Boolean {
+        return accountRepository.getStatus(email = email)
     }
 
    @OptIn(ExperimentalMaterial3Api::class)
@@ -153,7 +165,8 @@ data class SignUpDetails(
     val password: String = "",
     val reEnterPassword: String = "",
     val dateOfBirth: String = "",
-    val gender: String = ""
+    val gender: String = "",
+    val isAccountLoggedIn: Boolean = true
 )
 
 fun SignUpDetails.toAccount(): Account = Account(
@@ -163,5 +176,6 @@ fun SignUpDetails.toAccount(): Account = Account(
     password = password,
     reEnterPassword = reEnterPassword,
     dateOfBirth = dateOfBirth,
-    gender = gender
+    gender = gender,
+    isAccountLoggedIn = isAccountLoggedIn
 )

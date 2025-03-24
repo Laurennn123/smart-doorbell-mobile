@@ -35,11 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
+import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.components.UserInput
 import com.example.mobileapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.log
 
 object LoginDestination : NavigationDestination {
@@ -51,9 +54,10 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     navigateToHomeScreen: (String) -> Unit,
     onSignUpClick: () -> Unit,
-    loginViewModel: LoginViewModel = viewModel()
+    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val loginState by loginViewModel.loginUiState.collectAsState()
+    val userStatusState by loginViewModel.userState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     Box(
@@ -127,6 +131,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(40.dp))
                 SimpleButton(
                     onClick = {
+                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.isUserLoggedIn)
                         coroutineScope.launch {
                             if (loginViewModel.isEmailPassRegistered()) {
                                 launch { navigateToHomeScreen(loginViewModel.getFullName()) }

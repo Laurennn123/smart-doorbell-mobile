@@ -38,6 +38,7 @@ import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.components.SimpleButton
+import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.navigation.NavigationDestination
 import com.example.mobileapp.ui.theme.MobileAppTheme
 
@@ -52,9 +53,11 @@ fun HomeScreen(
     tryClick: () -> Unit,
     onClickEnter: () -> Unit,
     homeViewModel: HomeScreenModel = viewModel(),
+    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier) {
 
     val homeUiState by homeViewModel.uiState.collectAsState()
+    val userStatusState = loginViewModel.userState.collectAsState()
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -83,6 +86,7 @@ fun HomeScreen(
                     { VisitorCard("borils${index}", true,modifier = Modifier.padding(start = 10.dp)) }
                 )
                 homeViewModel.index++
+                loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
             },
             onClickDoor = {}
         )

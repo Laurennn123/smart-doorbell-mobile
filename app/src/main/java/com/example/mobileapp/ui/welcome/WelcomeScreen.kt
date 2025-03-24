@@ -17,6 +17,11 @@ import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -27,11 +32,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.mobileapp.R
+import com.example.mobileapp.ui.AppViewModelProvider
+import com.example.mobileapp.ui.HomeScreenDestination
 import com.example.mobileapp.ui.components.DefaultIcon
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
+import com.example.mobileapp.ui.sign_up.SignUpViewModel
 import com.example.mobileapp.ui.theme.MobileAppTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 object WelcomeDestination : NavigationDestination {
     override val route = "Welcome"
@@ -88,18 +100,5 @@ fun WelcomeScreen(
                 fontSize = 20.sp
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun Test() {
-    MobileAppTheme {
-        WelcomeScreen(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-            onClickContinue = {}
-        )
     }
 }

@@ -58,5 +58,7 @@
     <string name="address">Address</string>
     <string name="create_new_account">Create new account</string>
     <string name="contact_num">Contact number</string>
+    <string name="name_channel">Front Door</string>
+    <string name="description_channel">This channel is used to display a message to alert the user.</string>
     <string name="about_us_description">Welcome to Smart Entry, your smart and secure home access solution. Our mobile application is designed to seamlessly integrate with the Smart Doorbell System, providing homeowners with real-time visitor notifications, remote door access, and advanced facial recognition technology.\n\n At Smart Entry, we prioritize security, convenience, and ease of use. Our goal is to enhance home security by allowing users to monitor and manage guest access anytime, anywhere. Whether it’s identifying visitors, unlocking the door remotely, or keeping track of entry logs, our app ensures that you stay in control of your home’s security with just a few taps.</string>
 </resources>

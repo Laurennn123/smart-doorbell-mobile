@@ -2,9 +2,13 @@ package com.example.mobileapp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebSettings
@@ -28,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -38,9 +43,10 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel()
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(
-                this, CAMERAX_PERMISSIONS, 0
+                this, CAMERAX_NOTIFICATION_PERMISSIONS, 0
             )
         }
         enableEdgeToEdge()
@@ -57,16 +63,14 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    SmartEntryApp()
+                    SmartEntryApp(context = applicationContext)
                 }
             }
         }
     }
 
-
-    // know how to bluetooth permission
     private fun hasRequiredPermissions(): Boolean {
-        return CAMERAX_PERMISSIONS.all {
+        return CAMERAX_NOTIFICATION_PERMISSIONS.all {
             ContextCompat.checkSelfPermission(
                 applicationContext,
                 it
@@ -74,10 +78,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun createNotificationChannel() {
+        val name = getString(R.string.name_channel)
+        val descriptionText = getString(R.string.description_channel)
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val frontDoorId = "front_door_channel"
+        val channel = NotificationChannel(frontDoorId, name, importance).apply {
+            description = descriptionText
+        }
+        val notificationManager: NotificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
     companion object  {
-        private val CAMERAX_PERMISSIONS = arrayOf(
+        private val CAMERAX_NOTIFICATION_PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.POST_NOTIFICATIONS
         )
     }
 }

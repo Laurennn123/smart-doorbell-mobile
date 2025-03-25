@@ -1,5 +1,9 @@
 package com.example.mobileapp.ui
 
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,12 +31,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.ESP32VideoStream
+import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.components.IconAppBar
@@ -41,23 +49,42 @@ import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.navigation.NavigationDestination
 import com.example.mobileapp.ui.theme.MobileAppTheme
+import kotlin.jvm.java
 
 object HomeScreenDestination : NavigationDestination {
     override val route = "HomeScreen"
 }
 
+fun showNotification(context: Context) {
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val intent = Intent(context, MainActivity::class.java)
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    val messageAboutFrontDoor = NotificationCompat.Builder(context, "front_door_channel")
+        .setSmallIcon(R.drawable.smart)
+        .setContentTitle("Check your front door!")
+        .setContentText("There is someone outside on your front door, check it right now.")
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setAutoCancel(true)
+        .setContentIntent(pendingIntent)
+        .build()
+    notificationManager.notify(1, messageAboutFrontDoor)
+}
+
 @Composable
 fun HomeScreen(
 //    onClick: () -> Unit,
+    context: Context,
     nameOwner: String,
     tryClick: () -> Unit,
     onClickEnter: () -> Unit,
     homeViewModel: HomeScreenModel = viewModel(),
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier) {
-
+    val context = LocalContext.current
     val homeUiState by homeViewModel.uiState.collectAsState()
     val userStatusState = loginViewModel.userState.collectAsState()
+
+    context.getSystemService(NotificationManager::class.java)
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -88,7 +115,7 @@ fun HomeScreen(
                 homeViewModel.index++
                 loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
             },
-            onClickDoor = {}
+            onClickDoor = { showNotification(context = context) }
         )
         MessagePanel(
             messageValue = nameOwner,

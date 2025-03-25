@@ -1,6 +1,7 @@
 package com.example.mobileapp.ui.navigation
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,7 @@ import kotlinx.coroutines.withContext
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun SmartDoorBellNavHost(
+    context: Context,
     navController: NavHostController,
     modifier: Modifier = Modifier,
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -95,6 +97,7 @@ fun SmartDoorBellNavHost(
         composable(route = HomeScreenDestination.route) {
             HomeScreen(
                 nameOwner = nameOwner,
+                context = context,
                 tryClick = {},
                 onClickEnter = {},
                 modifier =  Modifier

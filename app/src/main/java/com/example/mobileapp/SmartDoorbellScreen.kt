@@ -109,8 +109,14 @@ enum class SettingsScreen {
 }
 
 @Composable
-fun SmartEntryApp(navController: NavHostController = rememberNavController()) {
-    SmartDoorBellNavHost(navController = navController)
+fun SmartEntryApp(
+    context: Context,
+    navController: NavHostController = rememberNavController()
+) {
+    SmartDoorBellNavHost(
+        context = context,
+        navController = navController
+    )
 }
 
 @SuppressLint("MissingPermission")

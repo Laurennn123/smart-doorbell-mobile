@@ -44,6 +44,13 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
     var showMenuPicker by mutableStateOf(false)
         private set
 
+    var isSignUpClicked by mutableStateOf(false)
+        private set
+
+    fun signUpClick() {
+        isSignUpClicked = !isSignUpClicked
+    }
+
     fun updateDate(newDate: String) {
         date = newDate
     }

@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +33,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -59,7 +67,7 @@ fun LoginScreen(
     val loginState by loginViewModel.loginUiState.collectAsState()
     val userStatusState by loginViewModel.userState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-
+    // I will input scafold here later
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -99,11 +107,20 @@ fun LoginScreen(
                     label = stringResource(id = R.string.password),
                     visualTransformation = if(loginViewModel.isIconPassClicked) VisualTransformation.None else PasswordVisualTransformation(),
                     icon = {
-                        IconAppBar(
-                            icon = Icons.Default.RemoveRedEye,
-                            onClick = { loginViewModel.showPassword() },
-                            contentDescription = stringResource(id = R.string.password)
-                        )
+                        if(loginViewModel.isIconPassClicked) {
+                            IconAppBar(
+                                icon = Icons.Default.Visibility,
+                                onClick = { loginViewModel.showPassword() },
+                                contentDescription = stringResource(id = R.string.password)
+                            )
+                        } else {
+                            IconAppBar(
+                                icon = Icons.Default.VisibilityOff,
+                                onClick = { loginViewModel.showPassword() },
+                                contentDescription = stringResource(id = R.string.password)
+                            )
+                        }
+
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                 )
@@ -129,26 +146,54 @@ fun LoginScreen(
                         }
                 )
                 Spacer(modifier = Modifier.height(40.dp))
-                SimpleButton(
+                Button(
                     onClick = {
-                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.isUserLoggedIn)
+                        loginViewModel.logInClicked()
                         coroutineScope.launch {
                             if (loginViewModel.isEmailPassRegistered()) {
-                                launch { navigateToHomeScreen(loginViewModel.getFullName()) }
+                                withContext(Dispatchers.Main) { loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.isUserLoggedIn) }
+                                // Change to local database to see it even it doesn't have wifi
+//                                launch { navigateToHomeScreen(loginViewModel.getFullName()) }
+                            } else {
+                                withContext(Dispatchers.Main) { loginViewModel.logInClicked()  }
                             }
                         }
                     },
-                    nameOfButton = stringResource(id = R.string.login).uppercase(),
                     shape = MaterialTheme.shapes.extraLarge,
-                    enabled = loginState.isEntryValid
-                )
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(110.dp)
+                ) {
+//                    Box(
+//                        contentAlignment = Alignment.Center,
+//                        modifier = Modifier.padding(horizontal = 16.dp)
+//                    ) {
+                        if (loginViewModel.isLogInClicked) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.width(24.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.login),
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily.Default,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+//                    }
+                }
             }
             Spacer(modifier = Modifier.height(120.dp))
             SimpleButton(
                 onClick = onSignUpClick,
-                nameOfButton = stringResource(id = R.string.sign_up).uppercase(),
-                shape = RoundedCornerShape(0.dp),
-                modifier = Modifier.fillMaxWidth()
+                nameOfButton = stringResource(id = R.string.create_new_account),
+                shape = MaterialTheme.shapes.extraLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             )
         }
     }

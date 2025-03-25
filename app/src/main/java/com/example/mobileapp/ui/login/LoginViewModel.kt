@@ -52,6 +52,9 @@ class LoginViewModel(
     var isIconPassClicked by mutableStateOf(false)
         private set
 
+    var isLogInClicked by mutableStateOf(false)
+        private set
+
     fun userStatusLogIn(isUserLogIn: Boolean) {
         viewModelScope.launch {
             userStatusRepository.saveUserLoggedIn(isUserLogIn)
@@ -109,17 +112,15 @@ class LoginViewModel(
     }
 
     fun updateUi(loginDetails: LoginUiDetails) {
-        _loginUiState.value = LoginUiState(loginDetails = loginDetails, isEntryValid = validateInput())
+        _loginUiState.value = LoginUiState(loginDetails = loginDetails)
     }
 
     fun showPassword() {
         isIconPassClicked = !isIconPassClicked
     }
 
-    private fun validateInput():Boolean {
-        return with(loginUiState.value.loginDetails) {
-            email.isNotBlank() && password.isNotBlank()
-        }
+    fun logInClicked() {
+        isLogInClicked = !isLogInClicked
     }
 }
 
@@ -129,7 +130,6 @@ data class UserStatusState(
 
 data class LoginUiState(
     val loginDetails: LoginUiDetails = LoginUiDetails(),
-    val isEntryValid: Boolean = false,
 )
 
 data class LoginUiDetails(

@@ -16,6 +16,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DropdownMenu
@@ -34,11 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
@@ -87,8 +92,9 @@ fun SignUpScreen(
                 onValueChange = signUpViewModel::updateUiState
             )
             Spacer(modifier = Modifier.height(60.dp))
-            SimpleButton(
+            Button(
                 onClick = {
+                    signUpViewModel.signUpClick()
                     coroutineScope.launch {
                         signUpViewModel.addAccountCloud()
                         signUpViewModel.addAccountCloudInformation()
@@ -97,21 +103,38 @@ fun SignUpScreen(
                             navigateBack()
                         }
                     }
-
                 },
-                nameOfButton = stringResource(R.string.sign_up).uppercase(),
                 shape = MaterialTheme.shapes.extraLarge,
+                modifier = Modifier
+                    .height(40.dp)
+                    .width(110.dp),
                 enabled = signUpViewModel.signUpUiState.isEntryValid
-            )
+            ) {
+                if (signUpViewModel.isSignUpClicked) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.width(24.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.sign_up),
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
         Spacer(modifier = Modifier.height(100.dp))
         SimpleButton(
             onClick = { navigateBack() },
-            nameOfButton = stringResource(R.string.login).uppercase(),
-            shape = RoundedCornerShape(0.dp),
+            nameOfButton = stringResource(R.string.login),
+            shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color(0xFF77C89D))
+                .padding(horizontal = 20.dp)
         )
     }
 }

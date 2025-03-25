@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.java.websocket)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.storage)
+    // Work manager
+    implementation(libs.androidx.work.runtime.ktx)
     // Datastore
     implementation(libs.androidx.datastore.preferences)
     // Room

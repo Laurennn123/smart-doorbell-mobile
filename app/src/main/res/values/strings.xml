@@ -34,12 +34,12 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="sign_in">Sign In</string>
-    <string name="sign_up">Sign Up</string>
+    <string name="sign_up">Sign up</string>
     <string name="create_account">Create Account</string>
     <string name="full_name">Full name</string>
     <string name="email">Email</string>
     <string name="re_enter_password">Re-enter Password</string>
-    <string name="login">Login</string>
+    <string name="login">Log in</string>
     <string name="gender">Gender</string>
     <string name="select_date">Select Date</string>
     <string name="arrow_down">Arrow Down Gender Picker</string>
@@ -56,6 +56,7 @@
     <string name="input_contact_num">Input contact number</string>
     <string name="input_address">Input address</string>
     <string name="address">Address</string>
+    <string name="create_new_account">Create new account</string>
     <string name="contact_num">Contact number</string>
     <string name="about_us_description">Welcome to Smart Entry, your smart and secure home access solution. Our mobile application is designed to seamlessly integrate with the Smart Doorbell System, providing homeowners with real-time visitor notifications, remote door access, and advanced facial recognition technology.\n\n At Smart Entry, we prioritize security, convenience, and ease of use. Our goal is to enhance home security by allowing users to monitor and manage guest access anytime, anywhere. Whether it’s identifying visitors, unlocking the door remotely, or keeping track of entry logs, our app ensures that you stay in control of your home’s security with just a few taps.</string>
 </resources>

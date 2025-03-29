@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.google.firebase.firestore.remote.Datastore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
@@ -23,6 +24,10 @@ class UserStatusRepository(
         dataStore.edit { status ->
             status[IS_USER_LOGGED_IN] = isUserLoggedIn
         }
+    }
+
+    suspend fun getCurrentUserLoginState(): Boolean {
+        return dataStore.data.first()[IS_USER_LOGGED_IN] ?: false
     }
 
     val isUserLoggedIn: Flow<Boolean> = dataStore.data.map { status ->

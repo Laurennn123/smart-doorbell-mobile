@@ -22,9 +22,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
 class LoginViewModel(
@@ -42,10 +44,11 @@ class LoginViewModel(
     val userState: StateFlow<UserStatusState> =
         userStatusRepository.isUserLoggedIn.map { isUserLogIn ->
             UserStatusState(isUserLogIn)
-        }.stateIn(
+        }.distinctUntilChanged()
+            .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = UserStatusState()
+            initialValue = UserStatusState(runBlocking { userStatusRepository.getCurrentUserLoginState() })
         )
     val loginUiState: StateFlow<LoginUiState> = _loginUiState.asStateFlow()
 
@@ -61,8 +64,12 @@ class LoginViewModel(
         }
     }
 
+    fun clearEmailField(loginDetails: LoginUiDetails) {
+        _loginUiState.value = LoginUiState(loginDetails = loginDetails)
+    }
+
     @OptIn(UnstableApi::class)
-    suspend fun isEmailPassRegistered(): Boolean {
+    suspend fun isEmailPassRegistered(loginDetails: LoginUiDetails): Boolean {
         auth = FirebaseAuth.getInstance()
         val email = _loginUiState.value.loginDetails.email
         val password = _loginUiState.value.loginDetails.password
@@ -72,12 +79,13 @@ class LoginViewModel(
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     isSucess = true
+                    Log.d(TAG, "success!")
                 }
             }.await()
         } catch (e: Exception) {
+            _loginUiState.value = LoginUiState(loginDetails = loginDetails, errorMessage = e.message.toString())
             Log.d(TAG, e.message.toString())
         }
-
         return isSucess
     }
 
@@ -97,9 +105,6 @@ class LoginViewModel(
         return fullName
     }
 
-    fun getLocalName(email: String = _loginUiState.value.loginDetails.email)
-    : Flow<String> = accountRepository.getName(email)
-
     @OptIn(UnstableApi::class)
     suspend fun sendPasswordResetEmail() {
         val TAG = "database"
@@ -107,7 +112,7 @@ class LoginViewModel(
             addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d(TAG, "Email sent.")
-            }
+                }
         }.await()
     }
 
@@ -130,6 +135,7 @@ data class UserStatusState(
 
 data class LoginUiState(
     val loginDetails: LoginUiDetails = LoginUiDetails(),
+    val errorMessage: String = ""
 )
 
 data class LoginUiDetails(

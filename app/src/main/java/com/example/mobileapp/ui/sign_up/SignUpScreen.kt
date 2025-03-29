@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -91,7 +92,7 @@ fun SignUpScreen(
                 signUpViewModel = signUpViewModel,
                 onValueChange = signUpViewModel::updateUiState
             )
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp))
             Button(
                 onClick = {
                     signUpViewModel.signUpClick()
@@ -135,6 +136,7 @@ fun SignUpScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .absoluteOffset(y = -10.dp)
         )
     }
 }
@@ -162,7 +164,7 @@ private fun IdentityForm(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Next
-        )
+        ),
     )
     IdentityTextField(
         label = stringResource(R.string.password),
@@ -218,8 +220,9 @@ private fun IdentityTextField(
     userTyped: (String) -> Unit,
     visualTransformation: VisualTransformation,
     keyboardOptions: KeyboardOptions,
+    isError: Boolean = false,
 ) {
-    TextField(
+    OutlinedTextField(
         value = displayTyped,
         onValueChange = userTyped,
         label = { Text(text = label) },
@@ -230,6 +233,7 @@ private fun IdentityTextField(
             unfocusedContainerColor = Color.Transparent,
         ),
         singleLine = true,
+        isError = isError,
         modifier = Modifier
             .height(70.dp)
     )
@@ -268,7 +272,9 @@ private fun DatePickerDocked(
 
         if (showDatePicker) {
             Popup(
-                onDismissRequest = { onDismissRequest(selectedDate) },
+                onDismissRequest = {
+                    onDismissRequest(selectedDate)
+                },
                 alignment = Alignment.TopStart
             ) {
                 Box(
@@ -284,6 +290,7 @@ private fun DatePickerDocked(
                 }
             }
         }
+
     }
 }
 

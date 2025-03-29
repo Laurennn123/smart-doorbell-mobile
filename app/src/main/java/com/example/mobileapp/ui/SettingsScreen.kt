@@ -1,6 +1,9 @@
 package com.example.mobileapp.ui
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,40 +18,71 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.mobileapp.BackAndUserAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.model.Settings
 import com.example.mobileapp.ui.components.SimpleButton
+import com.example.mobileapp.ui.navigation.NavigationDestination
 
+object SettingScreenDestination : NavigationDestination {
+    override val route = "Setting"
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsScreen(
     settings: List<Settings>,
     onClick: (String) -> Unit,
+    navigateUp: () -> Unit,
+    currentDestination: String,
     modifier: Modifier = Modifier) {
 
-    Column(
-        modifier = modifier
-    ) {
-        Text(
-            text = stringResource(R.string.settings),
-            style = MaterialTheme.typography.displayLarge
-        )
-        settings.forEach { option ->
-            val title = stringResource(option.title)
-            SettingsSelectButton(
-                settings = option,
-                onClick = { onClick(title) },
-                modifier = Modifier
-                    .padding(vertical = dimensionResource(R.dimen.padding_small))
-            )
+    Scaffold(
+        topBar = { BackAndUserAppBar(
+            navigateUp = navigateUp,
+            currentDestination = currentDestination
+        ) }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF77C89D), Color(0xFF006663)
+                        )
+                    )
+                )
+                .padding(innerPadding)
+        ) {
+            Column(
+                modifier = modifier
+            ) {
+                Text(
+                    text = stringResource(R.string.settings),
+                    style = MaterialTheme.typography.displayLarge
+                )
+                settings.forEach { option ->
+                    val title = stringResource(option.title)
+                    SettingsSelectButton(
+                        settings = option,
+                        onClick = { onClick(title) },
+                        modifier = Modifier
+                            .padding(vertical = dimensionResource(R.dimen.padding_small))
+                    )
+                }
+            }
         }
     }
 }

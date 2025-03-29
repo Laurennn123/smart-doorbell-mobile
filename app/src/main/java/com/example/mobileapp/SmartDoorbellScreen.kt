@@ -142,17 +142,17 @@ fun SmartDoorbellApp(
     Scaffold(
         topBar = {
             if (currentScreen == SmartDoorbellScreen.Home.name) {
-                HomeScreenAppBar()
+//                HomeScreenAppBar()
             } else {
-                BackAndUserAppBar(
-                    navigateUp = {
-                        if (currentScreen == "View Authorized" || currentScreen == "Add New") {
-                            navController.popBackStack(route = SmartDoorbellScreen.Settings.name, false)
-                        } else {
-                            navController.navigateUp()
-                        }
-                    }
-                )
+//                BackAndUserAppBar(
+//                    navigateUp = {
+//                        if (currentScreen == "View Authorized" || currentScreen == "Add New") {
+//                            navController.popBackStack(route = SmartDoorbellScreen.Settings.name, false)
+//                        } else {
+//                            navController.navigateUp()
+//                        }
+//                    }
+//                )
             }
         },
 //        bottomBar = {
@@ -277,12 +277,12 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SettingsScreen.`About Us`.name) {
-                    AboutUsScreen(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxSize()
-                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                    )
+//                    AboutUsScreen(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .fillMaxSize()
+//                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+//                    )
                 }
 
                 composable(route = SmartDoorbellScreen.Home.name) {
@@ -326,36 +326,36 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SmartDoorbellScreen.Settings.name) {
-                    SettingsScreen(
-                        settings = settings,
-                        onClick = { settingsSelect = it },
-                        modifier = Modifier
-                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                    )
-                    if (settingsSelect == SettingsScreen.`Face Enrollment`.name) {
-                        FaceEnrollmentAddOrView(
-                            onDismissRequest = {
-                                settingsSelect = ""
-                            },
-                            onClickAddNew = {
-                                settingsSelect = ""
-                                navController.navigate("Add New")
-                            },
-                            onClickView = {
-                                settingsSelect = ""
-                                navController.navigate("View Authorized")
-                            }
-                        )
-                    } else if (settingsSelect == SettingsScreen.`Entries History`.name) {
-                        settingsSelect = ""
-                        navController.navigate(SettingsScreen.`Entries History`.name)
-                    } else if (settingsSelect == SettingsScreen.`About Us`.name){
-                        settingsSelect = ""
-                        navController.navigate(SettingsScreen.`About Us`.name)
-                    } else if(settingsSelect == SettingsScreen.`My Account`.name) {
-                        settingsSelect = ""
-                        navController.navigate(SettingsScreen.`My Account`.name)
-                    }
+//                    SettingsScreen(
+//                        settings = settings,
+//                        onClick = { settingsSelect = it },
+//                        modifier = Modifier
+//                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+//                    )
+//                    if (settingsSelect == SettingsScreen.`Face Enrollment`.name) {
+//                        FaceEnrollmentAddOrView(
+//                            onDismissRequest = {
+//                                settingsSelect = ""
+//                            },
+//                            onClickAddNew = {
+//                                settingsSelect = ""
+//                                navController.navigate("Add New")
+//                            },
+//                            onClickView = {
+//                                settingsSelect = ""
+//                                navController.navigate("View Authorized")
+//                            }
+//                        )
+//                    } else if (settingsSelect == SettingsScreen.`Entries History`.name) {
+//                        settingsSelect = ""
+//                        navController.navigate(SettingsScreen.`Entries History`.name)
+//                    } else if (settingsSelect == SettingsScreen.`About Us`.name){
+//                        settingsSelect = ""
+//                        navController.navigate(SettingsScreen.`About Us`.name)
+//                    } else if(settingsSelect == SettingsScreen.`My Account`.name) {
+//                        settingsSelect = ""
+//                        navController.navigate(SettingsScreen.`My Account`.name)
+//                    }
                 }
 
                 composable(route = "Add New") {
@@ -427,8 +427,9 @@ fun SmartDoorbellApp(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BackAndUserAppBar(
+fun BackAndUserAppBar(
     navigateUp: () -> Unit,
+    currentDestination: String,
     modifier: Modifier = Modifier) {
     TopAppBar(
         title = {},
@@ -441,27 +442,32 @@ private fun BackAndUserAppBar(
             )
         },
         actions = {
-            IconAppBar(
-                icon = Icons.Filled.AccountCircle,
-                onClick = { },
-                contentDescription = stringResource(id = R.string.user_account),
-            )
+            if (currentDestination != "Setting") {
+                IconAppBar(
+                    icon = Icons.Filled.AccountCircle,
+                    onClick = { },
+                    contentDescription = stringResource(id = R.string.user_account),
+                )
+            }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFF041721).copy(alpha = 0.1f)
-        ),
+        colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeScreenAppBar(modifier: Modifier = Modifier) {
-    val userName = "Borils"
+fun HomeScreenAppBar(
+    modifier: Modifier = Modifier,
+    onClickSettings: () -> Unit,
+    onClickAccount: () -> Unit,
+    nameOwner: String,
+) {
+//    val userName = "Borils"
     TopAppBar(
         title = {
             Row {
                 Column {
-                    Text( text = stringResource(id = R.string.user_name, userName) )
+                    Text( text = stringResource(id = R.string.user_name, nameOwner) )
                     Text( text = stringResource(id = R.string.front_door))
                 }
             }
@@ -470,19 +476,17 @@ private fun HomeScreenAppBar(modifier: Modifier = Modifier) {
             Row {
                 IconAppBar(
                     icon = Icons.Filled.Settings,
-                    onClick = {},
+                    onClick = onClickSettings,
                     contentDescription = stringResource(id = R.string.menu),
                 )
                 IconAppBar(
                     icon = Icons.Filled.AccountCircle,
-                    onClick = {},
+                    onClick = onClickAccount,
                     contentDescription = stringResource(id = R.string.user_account),
                 )
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFF041721).copy(alpha = 0.1f)
-        ),
+        colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
         modifier = modifier
     )
 }

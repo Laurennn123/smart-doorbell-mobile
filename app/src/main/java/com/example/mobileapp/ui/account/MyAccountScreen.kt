@@ -57,9 +57,14 @@ import com.example.mobileapp.R
 import com.example.mobileapp.ui.components.DefaultIcon
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.ImageContainer
+import com.example.mobileapp.ui.navigation.NavigationDestination
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+object MyAccountScreenDestination: NavigationDestination {
+    override val route = "My Account"
+}
 
 @Composable
 fun MyAccountScreen(

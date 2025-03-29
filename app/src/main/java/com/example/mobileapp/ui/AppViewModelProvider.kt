@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.mobileapp.SmartDoorbellApplication
 import com.example.mobileapp.model.HomeScreenModel
+import com.example.mobileapp.ui.account.MyAccountViewModel
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.sign_up.SignUpViewModel
 
@@ -17,6 +18,7 @@ object AppViewModelProvider {
             smartDoorbellApplication().userStatusRepository
             ) }
         initializer { HomeScreenModel() }
+        initializer { MyAccountViewModel() }
     }
 }
 

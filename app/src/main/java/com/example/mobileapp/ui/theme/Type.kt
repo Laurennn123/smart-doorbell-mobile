@@ -18,6 +18,11 @@ val NotoSerif = FontFamily(
     Font(R.font.notoserif_regular, FontWeight.Normal)
 )
 
+val Roboto = FontFamily(
+    Font(R.font.roboto_bold, FontWeight.Bold),
+    Font(R.font.roboto_regular, FontWeight.Bold)
+)
+
 val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = Quicksand,
@@ -42,19 +47,19 @@ val Typography = Typography(
     ),
 
     bodyMedium = TextStyle(
-        fontFamily = NotoSerif,
+        fontFamily = Roboto,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp
     ),
 
     bodySmall = TextStyle(
-        fontFamily = NotoSerif,
+        fontFamily = Quicksand,
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp
     ),
 
     labelLarge = TextStyle(
-        fontFamily = NotoSerif,
+        fontFamily = Roboto,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,13 +24,18 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -40,6 +46,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.ESP32VideoStream
+import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
@@ -75,61 +82,85 @@ fun HomeScreen(
 //    onClick: () -> Unit,
     context: Context,
     nameOwner: String,
-    tryClick: () -> Unit,
-    onClickEnter: () -> Unit,
+    onClickSettings: () -> Unit,
+    onClickAccount: () -> Unit,
     homeViewModel: HomeScreenModel = viewModel(),
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier) {
+
     val context = LocalContext.current
     val homeUiState by homeViewModel.uiState.collectAsState()
+    var userMessage by rememberSaveable { mutableStateOf("") }
     val userStatusState = loginViewModel.userState.collectAsState()
 
     context.getSystemService(NotificationManager::class.java)
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier,
-    ) {
-        IconAppBar(
-            icon = Icons.Filled.Check,
-            onClick = tryClick,
-            contentDescription = "Try"
-        )
-//        RecentNotification(
-//            onClick = onClick,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .size(60.dp)
-//        )
-        Camera(modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
-            .height(300.dp))
-        Actions(
-            onClickAlarm = {
-                // example that it should automated
-                val index = homeViewModel.index
-                homeUiState.listOfRecentVisitors.add(
-                    { VisitorCard("borils${index}", true,modifier = Modifier.padding(start = 10.dp)) }
-                )
-                homeViewModel.index++
-                loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
-            },
-            onClickDoor = { showNotification(context = context) }
-        )
-        MessagePanel(
-            messageValue = nameOwner,
-            userMessage = { homeViewModel.updateMessage(it) },
-            onClickClear = { homeViewModel.clearMessage() },
-            onClickEnter = onClickEnter,
+    Scaffold(
+        topBar = { HomeScreenAppBar(
+            onClickAccount = onClickAccount,
+            onClickSettings = onClickSettings,
+            nameOwner = nameOwner
+        ) }
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
-        )
-        RecentVisitors(
-            listOfUsers = homeUiState.listOfRecentVisitors,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
+                .fillMaxSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF77C89D), Color(0xFF006663)
+                        )
+                    )
+                )
+                .padding(innerPadding)
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = modifier,
+            ) {
+//                RecentNotification(
+//                    onClick = onClick,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .size(60.dp)
+//                )
+                LiveStream(modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
+                    .height(300.dp))
+                Actions(
+                    onClickAlarm = {
+//                        val index = homeViewModel.index
+//                        homeUiState.listOfRecentVisitors.add(
+//                            { VisitorCard("borils${index}", true,modifier = Modifier.padding(start = 10.dp)) }
+//                        )
+//                        homeViewModel.index++
+                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
+                        homeViewModel.sendMessageToESP32("~")
+                    },
+                    onClickUnlock = {
+//                        showNotification(context = context)
+                        homeViewModel.sendMessageToESP32("!")
+                    }
+                )
+                MessagePanel(
+                    messageValue = userMessage,
+                    userMessage = { userMessage = it },
+                    onClickClear = { userMessage = "" },
+                    onClickEnter = {
+                        userMessage = ""
+                        homeViewModel.sendMessageToESP32(userMessage)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = Color(0xFF77C89D), shape = MaterialTheme.shapes.medium)
+                )
+//                RecentVisitors(
+//                    listOfUsers = homeUiState.listOfRecentVisitors,
+//                    modifier = Modifier.padding(vertical = 8.dp)
+//                )
+            }
+        }
     }
 }
 
@@ -165,7 +196,7 @@ private fun RecentNotification(
 }
 
 @Composable
-private fun Camera(modifier: Modifier = Modifier) {
+private fun LiveStream(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(id = R.string.live_view_stream),
         style = MaterialTheme.typography.displayMedium,
@@ -188,7 +219,7 @@ private fun Camera(modifier: Modifier = Modifier) {
 
 @Composable
 private fun Actions(
-    onClickDoor: () -> Unit,
+    onClickUnlock: () -> Unit,
     onClickAlarm: () -> Unit) {
     Spacer(modifier = Modifier.height(8.dp))
     Text(
@@ -197,7 +228,7 @@ private fun Actions(
     )
     Spacer(modifier = Modifier.height(8.dp))
     SimpleButton(
-        onClick = onClickDoor,
+        onClick = onClickUnlock,
         nameOfButton = stringResource(id = R.string.unlock_door),
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge
@@ -237,7 +268,8 @@ private fun MessagePanel(
                 .height(80.dp)
                 .padding(
                     vertical = dimensionResource(R.dimen.padding_small),
-                    horizontal = dimensionResource(R.dimen.padding_extra_medium)),
+                    horizontal = dimensionResource(R.dimen.padding_extra_medium)
+                ),
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),

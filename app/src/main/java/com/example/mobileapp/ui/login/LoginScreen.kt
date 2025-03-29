@@ -1,11 +1,14 @@
 package com.example.mobileapp.ui.login
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,10 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,6 +47,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.AppViewModelProvider
@@ -61,13 +68,15 @@ object LoginDestination : NavigationDestination {
 fun LoginScreen(
     modifier: Modifier = Modifier,
     navigateToHomeScreen: (String) -> Unit,
+    navigateToDialog: (String, String) -> Unit,
     onSignUpClick: () -> Unit,
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val loginState by loginViewModel.loginUiState.collectAsState()
     val userStatusState by loginViewModel.userState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    // I will input scafold here later
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -99,7 +108,16 @@ fun LoginScreen(
                 UserInput(
                     displayTyped = loginState.loginDetails.email,
                     userTyped = { loginViewModel.updateUi(loginState.loginDetails.copy(email = it)) },
-                    label = stringResource(id = R.string.email)
+                    label = stringResource(id = R.string.email),
+                    icon = {
+                        if (loginState.loginDetails.email.isNotEmpty()) {
+                            IconAppBar(
+                                icon = Icons.Default.Close,
+                                onClick = { loginViewModel.clearEmailField(loginState.loginDetails.copy(email = "")) },
+                                contentDescription = stringResource(id = R.string.email)
+                            )
+                        }
+                    }
                 )
                 UserInput(
                     displayTyped = loginState.loginDetails.password,
@@ -150,12 +168,19 @@ fun LoginScreen(
                     onClick = {
                         loginViewModel.logInClicked()
                         coroutineScope.launch {
-                            if (loginViewModel.isEmailPassRegistered()) {
-                                withContext(Dispatchers.Main) { loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.isUserLoggedIn) }
-                                // Change to local database to see it even it doesn't have wifi
-//                                launch { navigateToHomeScreen(loginViewModel.getFullName()) }
+                            if (loginViewModel.isEmailPassRegistered(loginState.loginDetails)) {
+                                navigateToHomeScreen(loginViewModel.getFullName())
+                                withContext(Dispatchers.Main) {
+                                    loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.isUserLoggedIn)
+                                }
                             } else {
-                                withContext(Dispatchers.Main) { loginViewModel.logInClicked()  }
+                                withContext(Dispatchers.Main) {
+                                    loginViewModel.logInClicked()
+                                    navigateToDialog(
+                                        loginState.errorMessage,
+                                        loginState.loginDetails.email
+                                    )
+                                }
                             }
                         }
                     },
@@ -164,10 +189,6 @@ fun LoginScreen(
                         .height(40.dp)
                         .width(110.dp)
                 ) {
-//                    Box(
-//                        contentAlignment = Alignment.Center,
-//                        modifier = Modifier.padding(horizontal = 16.dp)
-//                    ) {
                         if (loginViewModel.isLogInClicked) {
                             CircularProgressIndicator(
                                 modifier = Modifier.width(24.dp),
@@ -183,7 +204,6 @@ fun LoginScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-//                    }
                 }
             }
             Spacer(modifier = Modifier.height(120.dp))
@@ -194,9 +214,8 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
+                    .absoluteOffset(y = -10.dp)
             )
         }
     }
 }
-
-

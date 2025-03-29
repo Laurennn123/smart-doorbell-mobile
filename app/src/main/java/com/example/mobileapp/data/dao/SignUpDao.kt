@@ -13,7 +13,7 @@ interface SignUpDao {
     suspend fun insertAccount(account: Account)
 
     @Query("SELECT isAccountLoggedIn FROM Account WHERE email = :email")
-    fun getStatus(email: String): Boolean
+    fun getStatus(email: String): Flow<Boolean>
 
     @Query("SELECT fullName FROM Account WHERE email = :email")
     fun getName(email: String): Flow<String>

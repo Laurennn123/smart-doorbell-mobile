@@ -22,6 +22,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+val TAG = "database"
+
 class SignUpViewModel(private val accountRepository: AccountRepository) : ViewModel() {
     companion object {
         @SuppressLint("StaticFieldLeak")
@@ -57,10 +59,13 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
 
     @androidx.annotation.OptIn(UnstableApi::class)
     suspend fun addAccountCloud() {
-        val TAG = "database"
         auth = FirebaseAuth.getInstance()
-        auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password)
-            .addOnSuccessListener { Log.d(TAG, "sucess2")   }.addOnFailureListener { e-> Log.d(TAG, "failed", e)  }.await()
+        try {
+            auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password).await()
+        } catch(e: Exception) {
+            Log.d(TAG, "authentication")
+            Log.d(TAG, e.message.toString())
+        }
     }
 
     @androidx.annotation.OptIn(UnstableApi::class)
@@ -72,20 +77,30 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
             "Birth Date" to date,
             "Gender" to gender
         )
-        val TAG = "database"
-        database.collection("Account").document(signUpUiState.signUpDetails.email).set(account)
-            .addOnSuccessListener { Log.d(TAG, "sucess") }.addOnFailureListener { e-> Log.d(TAG, "failed", e) }.await()
-    }
-
-    suspend fun addLocalAccount() {
-        if(validateInput()) {
-            accountRepository.createAccount(signUpUiState.signUpDetails.toAccount())
+        try {
+            database.collection("Account").document(signUpUiState.signUpDetails.email).set(account).await()
+        } catch(e: Exception) {
+            Log.d(TAG, "cloud firestore database")
+            Log.d(TAG, e.message.toString())
         }
     }
-    // sjjsjsjjsj@gmail.com
-    fun isLoggedIn(email: String): Boolean {
-        return accountRepository.getStatus(email = email)
+
+    @androidx.annotation.OptIn(UnstableApi::class)
+    suspend fun addLocalAccount() {
+        try {
+            if(validateInput()) {
+                accountRepository.createAccount(signUpUiState.signUpDetails.toAccount())
+            }
+        } catch(e: Exception) {
+            Log.d(TAG, "local")
+            Log.d(TAG, e.message.toString())
+        }
+
     }
+    // sjjsjsjjsj@gmail.com
+//    fun isLoggedIn(email: String): Boolean {
+//        return accountRepository.getStatus(email = email)
+//    }
 
    @OptIn(ExperimentalMaterial3Api::class)
    fun selectedDate(datePickerState: DatePickerState):String {
@@ -102,7 +117,7 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
 
     fun onDismissCalendar() {
         showDatePicker = false
-        updateField(signUpUiState.signUpDetails)
+//        updateField(signUpUiState.signUpDetails)
         if (signUpUiState.signUpDetails.dateOfBirth.isNotBlank()) {
             signUpUiState = SignUpUiState(
                 signUpDetails = signUpUiState.signUpDetails,

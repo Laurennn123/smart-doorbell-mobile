@@ -14,12 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -43,20 +41,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.ESP32VideoStream
 import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
-import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.navigation.NavigationDestination
 import com.example.mobileapp.ui.theme.MobileAppTheme
-import kotlin.jvm.java
 
 object HomeScreenDestination : NavigationDestination {
     override val route = "HomeScreen"
@@ -81,17 +76,18 @@ fun showNotification(context: Context) {
 fun HomeScreen(
 //    onClick: () -> Unit,
     context: Context,
-    nameOwner: String,
+    fullName: String,
     onClickSettings: () -> Unit,
     onClickAccount: () -> Unit,
-    homeViewModel: HomeScreenModel = viewModel(),
+    homeViewModel: HomeScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
-    val homeUiState by homeViewModel.uiState.collectAsState()
     var userMessage by rememberSaveable { mutableStateOf("") }
-    val userStatusState = loginViewModel.userState.collectAsState()
+    // use the datastore log in to log out
+//    val userStatusState = loginViewModel.userState.collectAsState()
+    val userSession = loginViewModel.userSession.collectAsState()
 
     context.getSystemService(NotificationManager::class.java)
 
@@ -99,7 +95,7 @@ fun HomeScreen(
         topBar = { HomeScreenAppBar(
             onClickAccount = onClickAccount,
             onClickSettings = onClickSettings,
-            nameOwner = nameOwner
+            nameOwner = fullName
         ) }
     ) { innerPadding ->
         Box(
@@ -135,7 +131,9 @@ fun HomeScreen(
 //                            { VisitorCard("borils${index}", true,modifier = Modifier.padding(start = 10.dp)) }
 //                        )
 //                        homeViewModel.index++
-                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
+//                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
+                        // to log out and reset the email session
+                        loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
                         homeViewModel.sendMessageToESP32("~")
                     },
                     onClickUnlock = {

@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
+import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
@@ -67,15 +68,14 @@ object LoginDestination : NavigationDestination {
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    navigateToHomeScreen: (String) -> Unit,
+    navigateToHomeScreen: () -> Unit,
     navigateToDialog: (String, String) -> Unit,
     onSignUpClick: () -> Unit,
-    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val loginState by loginViewModel.loginUiState.collectAsState()
-    val userStatusState by loginViewModel.userState.collectAsState()
+    val userSessionState by loginViewModel.userSession.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-
 
     Box(
         modifier = Modifier
@@ -169,9 +169,12 @@ fun LoginScreen(
                         loginViewModel.logInClicked()
                         coroutineScope.launch {
                             if (loginViewModel.isEmailPassRegistered(loginState.loginDetails)) {
-                                navigateToHomeScreen(loginViewModel.getFullName())
                                 withContext(Dispatchers.Main) {
-                                    loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.isUserLoggedIn)
+                                    loginViewModel.userStatusLogIn(
+                                        isUserLogIn = !userSessionState.isUserLoggedIn,
+                                        userEmail = loginState.loginDetails.email
+                                    )
+                                    navigateToHomeScreen()
                                 }
                             } else {
                                 withContext(Dispatchers.Main) {

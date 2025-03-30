@@ -13,11 +13,8 @@ import com.example.mobileapp.ui.sign_up.SignUpViewModel
 object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer { SignUpViewModel(smartDoorbellApplication().container.accountRepository) }
-        initializer { LoginViewModel(
-            smartDoorbellApplication().container.accountRepository,
-            smartDoorbellApplication().userStatusRepository
-            ) }
-        initializer { HomeScreenModel() }
+        initializer { LoginViewModel(smartDoorbellApplication().userStatusRepository) }
+        initializer { HomeScreenModel(smartDoorbellApplication().container.accountRepository) }
         initializer { MyAccountViewModel() }
     }
 }

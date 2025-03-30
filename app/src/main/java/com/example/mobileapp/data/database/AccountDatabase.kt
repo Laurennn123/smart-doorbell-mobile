@@ -20,6 +20,7 @@ abstract class AccountDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AccountDatabase {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, AccountDatabase::class.java, "account_database")
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
             }

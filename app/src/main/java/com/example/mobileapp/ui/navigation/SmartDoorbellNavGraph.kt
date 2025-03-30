@@ -2,41 +2,24 @@ package com.example.mobileapp.ui.navigation
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -51,25 +34,15 @@ import com.example.mobileapp.ui.login.LoginScreen
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.sign_up.SignUpDestination
 import com.example.mobileapp.ui.sign_up.SignUpScreen
-import com.example.mobileapp.ui.sign_up.SignUpViewModel
 import com.example.mobileapp.ui.welcome.WelcomeDestination
 import com.example.mobileapp.ui.welcome.WelcomeScreen
 import com.example.mobileapp.data.DataSource.settings
+import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.SplashScreen
 import com.example.mobileapp.ui.SplashScreenDestination
 import com.example.mobileapp.ui.about_us.AboutUsScreen
 import com.example.mobileapp.ui.about_us.AboutUsScreenDestination
 import com.example.mobileapp.ui.account.MyAccountScreenDestination
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
-val TAG = "check"
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -77,31 +50,31 @@ fun SmartDoorBellNavHost(
     context: Context,
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    homeViewModel: HomeScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
     ) {
 
-    val isUserLoggedIn = loginViewModel.userState.collectAsState().value.isUserLoggedIn
-    var nameOwner by remember { mutableStateOf("") }
+    val userSession = loginViewModel.userSession.collectAsState()
+    val fullNameState by homeViewModel.fullName.collectAsState()
+
     var email by remember { mutableStateOf("") }
     var settingsOptionSelect by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
     NavHost(
         navController = navController,
-        startDestination = SplashScreenDestination.route, //if(isUserLoggedIn) HomeScreenDestination.route else  WelcomeDestination.route,
+        startDestination = SplashScreenDestination.route,
         modifier = modifier
     ) {
         composable(route = SplashScreenDestination.route) {
-            Log.d(TAG, isUserLoggedIn.toString())
             SplashScreen(
                 navigateToHomeScreen = { navController.navigate(route = HomeScreenDestination.route) },
                 navigateToWelcomeScreen = { navController.navigate(route = WelcomeDestination.route) },
-                isUserLoggedIn = isUserLoggedIn
+                isUserLoggedIn = userSession.value.isUserLoggedIn
             )
         }
 
         composable(route = WelcomeDestination.route) {
-            Log.d(TAG, isUserLoggedIn.toString())
             WelcomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,7 +95,6 @@ fun SmartDoorBellNavHost(
                     .fillMaxSize()
                     .statusBarsPadding(),
                 navigateToHomeScreen = {
-                    nameOwner = it
                     navController.popBackStack()
                     navController.navigate(route = HomeScreenDestination.route)
                 },
@@ -166,8 +138,9 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = HomeScreenDestination.route) {
+            homeViewModel.setFullName(email = userSession.value.userEmail)
             HomeScreen(
-                nameOwner = nameOwner,
+                fullName = fullNameState,
                 context = context,
                 onClickSettings = { navController.navigate(route = SettingScreenDestination.route)},
                 onClickAccount = {},
@@ -213,7 +186,7 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = MyAccountScreenDestination.route) {
-
+            //
         }
 
     }

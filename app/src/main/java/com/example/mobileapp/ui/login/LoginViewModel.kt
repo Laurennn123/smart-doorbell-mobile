@@ -1,9 +1,7 @@
 package com.example.mobileapp.ui.login
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,28 +9,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import com.example.mobileapp.data.repo.AccountRepository
 import com.example.mobileapp.data.repo.UserStatusRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
-class LoginViewModel(
-    private val accountRepository: AccountRepository,
-    private val userStatusRepository: UserStatusRepository
-) : ViewModel() {
+class LoginViewModel(private val userStatusRepository: UserStatusRepository) : ViewModel() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         private val database = Firebase.firestore
@@ -40,17 +32,20 @@ class LoginViewModel(
     }
 
     private var _loginUiState = MutableStateFlow(LoginUiState())
+    val loginUiState: StateFlow<LoginUiState> = _loginUiState.asStateFlow()
 
-    val userState: StateFlow<UserStatusState> =
-        userStatusRepository.isUserLoggedIn.map { isUserLogIn ->
-            UserStatusState(isUserLogIn)
-        }.distinctUntilChanged()
-            .stateIn(
+    val userSession: StateFlow<UserStatusState> = userStatusRepository.userSession
+        .map { session ->
+            UserStatusState(isUserLoggedIn = session.isUserLoggedIn, userEmail = session.userEmail)
+        }
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = UserStatusState(runBlocking { userStatusRepository.getCurrentUserLoginState() })
+            initialValue = UserStatusState(
+                isUserLoggedIn = runBlocking { userStatusRepository.getCurrentUserLoginState() },
+                userEmail = runBlocking { userStatusRepository.getCurrentEmail() }
+            )
         )
-    val loginUiState: StateFlow<LoginUiState> = _loginUiState.asStateFlow()
 
     var isIconPassClicked by mutableStateOf(false)
         private set
@@ -58,9 +53,12 @@ class LoginViewModel(
     var isLogInClicked by mutableStateOf(false)
         private set
 
-    fun userStatusLogIn(isUserLogIn: Boolean) {
+    fun userStatusLogIn(
+        isUserLogIn: Boolean,
+        userEmail: String
+    ) {
         viewModelScope.launch {
-            userStatusRepository.saveUserLoggedIn(isUserLogIn)
+            userStatusRepository.saveUserLoggedIn(isUserLoggedIn = isUserLogIn, userEmail = userEmail)
         }
     }
 
@@ -130,7 +128,8 @@ class LoginViewModel(
 }
 
 data class UserStatusState(
-    val isUserLoggedIn: Boolean = false
+    val isUserLoggedIn: Boolean = false,
+    val userEmail: String = ""
 )
 
 data class LoginUiState(

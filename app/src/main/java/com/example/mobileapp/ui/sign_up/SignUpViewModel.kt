@@ -117,7 +117,7 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
 
     fun onDismissCalendar() {
         showDatePicker = false
-//        updateField(signUpUiState.signUpDetails)
+        updateField(signUpUiState.signUpDetails)
         if (signUpUiState.signUpDetails.dateOfBirth.isNotBlank()) {
             signUpUiState = SignUpUiState(
                 signUpDetails = signUpUiState.signUpDetails,
@@ -188,7 +188,9 @@ data class SignUpDetails(
     val reEnterPassword: String = "",
     val dateOfBirth: String = "",
     val gender: String = "",
-    val isAccountLoggedIn: Boolean = true
+    val userName: String = "Username",
+    val address: String = "Address",
+    val contactNumber: String = "Contact Number"
 )
 
 fun SignUpDetails.toAccount(): Account = Account(
@@ -199,5 +201,7 @@ fun SignUpDetails.toAccount(): Account = Account(
     reEnterPassword = reEnterPassword,
     dateOfBirth = dateOfBirth,
     gender = gender,
-    isAccountLoggedIn = isAccountLoggedIn
+    userName = userName,
+    address = address,
+    contactNumber = contactNumber
 )

@@ -4,77 +4,53 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.mobileapp.data.repo.AccountRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MyAccountViewModel: ViewModel() {
+class MyAccountViewModel(private val accountRepository: AccountRepository): ViewModel() {
     private val _myAccountUiState = MutableStateFlow(MyAccountUiState())
     val accountUiState: StateFlow<MyAccountUiState> = _myAccountUiState.asStateFlow()
 
-    var userName by mutableStateOf("")
-    var address by mutableStateOf("")
-    var contactNumber by mutableStateOf("")
+    private val _birthDateState = MutableStateFlow("")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val birthDateDb: StateFlow<String> = _birthDateState
+        .flatMapLatest { birthDate ->
+            if (birthDate.isNotBlank()) accountRepository.getBirthdate(birthDate)
+            else flowOf("")
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = _birthDateState.value
+        )
+
+    fun updateBirthDate(dateBirth: String, email: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            accountRepository.updateBirthDate(dateBirth = dateBirth, email = email)
+        }
+    }
+
+    fun setBirthDate(email: String) {
+        _birthDateState.value = email
+    }
 
     var userButtonDetailClicked by mutableStateOf(false)
 
     var buttonClicked by mutableStateOf("")
 
     fun updateClicked(buttonClick: String) {
-        userButtonDetailClicked = true
+        userButtonDetailClicked = !userButtonDetailClicked
         buttonClicked = buttonClick
     }
-
-    fun updateUsername() {
-        _myAccountUiState.value = MyAccountUiState(
-            userName = userName,
-            address = _myAccountUiState.value.address,
-            contactNumber = _myAccountUiState.value.contactNumber,
-            birthDate = _myAccountUiState.value.birthDate
-        )
-        onDismiss()
-    }
-
-    fun updateAddress() {
-        _myAccountUiState.value = MyAccountUiState(
-            address = address,
-            userName = _myAccountUiState.value.userName,
-            contactNumber = _myAccountUiState.value.contactNumber,
-            birthDate = _myAccountUiState.value.birthDate
-        )
-        onDismiss()
-    }
-
-    fun updateContactNumber() {
-        _myAccountUiState.value = MyAccountUiState(
-            contactNumber = contactNumber,
-            userName = _myAccountUiState.value.userName,
-            address = _myAccountUiState.value.address,
-            birthDate = _myAccountUiState.value.birthDate
-        )
-        onDismiss()
-    }
-
-    fun updateBirthDate(birthDate: String) {
-        _myAccountUiState.value = MyAccountUiState(
-            contactNumber = _myAccountUiState.value.contactNumber,
-            userName = _myAccountUiState.value.userName,
-            address = _myAccountUiState.value.address,
-            birthDate = birthDate
-        )
-        onDismiss()
-    }
-
-
-
-    fun onDismiss() {
-        buttonClicked = ""
-        userName = ""
-        address = ""
-        contactNumber = ""
-        userButtonDetailClicked = false
-    }
-
 
 }
 
@@ -82,7 +58,7 @@ data class MyAccountUiState(
     val userName: String = "Username",
     val address: String = "Address",
     val contactNumber: String = "Contact number",
-    val birthDate: String = "Date",
-    val email: String = "akotosiboss@gmail.com"
+    val birthDate: String = "",
+    val email: String = ""
 )
 

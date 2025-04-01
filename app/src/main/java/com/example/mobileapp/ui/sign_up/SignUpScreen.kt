@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -34,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +59,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object SignUpDestination : NavigationDestination {
     override val route = "SignUp"
@@ -70,74 +75,86 @@ fun SignUpScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    Column(
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        Text(
-            text = stringResource(id = R.string.create_account),
-            style = MaterialTheme.typography.displayLarge,
-            modifier = Modifier
-                .align(alignment = Alignment.Start)
-                .padding(start = dimensionResource(R.dimen.padding_medium))
-        )
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-        ) {
-            IdentityForm(
-                signUpViewModel = signUpViewModel,
-                onValueChange = signUpViewModel::updateUiState
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF77C89D), Color(0xFF006663)
+                    )
+                )
             )
-            Spacer(modifier = Modifier.height(40.dp))
-            Button(
-                onClick = {
-                    signUpViewModel.signUpClick()
-                    coroutineScope.launch {
-                        signUpViewModel.addAccountCloud()
-                        signUpViewModel.addAccountCloudInformation()
-                        signUpViewModel.addLocalAccount()
-                        withContext(Dispatchers.Main) {
-                            navigateBack()
-                        }
-                    }
-                },
-                shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier
+        ) {
+            Text(
+                text = stringResource(id = R.string.create_account),
+                style = MaterialTheme.typography.displayLarge,
                 modifier = Modifier
-                    .height(40.dp)
-                    .width(110.dp),
-                enabled = signUpViewModel.signUpUiState.isEntryValid
+                    .align(alignment = Alignment.Start)
+                    .padding(start = dimensionResource(R.dimen.padding_medium))
+            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             ) {
-                if (signUpViewModel.isSignUpClicked) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.width(24.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = stringResource(id = R.string.sign_up),
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Bold
-                    )
+                IdentityForm(
+                    signUpViewModel = signUpViewModel,
+                    onValueChange = signUpViewModel::updateUiState
+                )
+                Spacer(modifier = Modifier.height(40.dp))
+                Button(
+                    onClick = {
+                        signUpViewModel.signUpClick()
+                        coroutineScope.launch {
+                            signUpViewModel.addAccountCloud()
+                            signUpViewModel.addAccountCloudInformation()
+                            signUpViewModel.addLocalAccount()
+                            withContext(Dispatchers.Main) {
+                                navigateBack()
+                            }
+                        }
+                    },
+                    shape = MaterialTheme.shapes.extraLarge,
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(110.dp),
+                    enabled = signUpViewModel.signUpUiState.isEntryValid
+                ) {
+                    if (signUpViewModel.isSignUpClicked) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(24.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.sign_up),
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily.Default,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
+            Spacer(modifier = Modifier.height(100.dp))
+            SimpleButton(
+                onClick = { navigateBack() },
+                nameOfButton = stringResource(R.string.login),
+                shape = MaterialTheme.shapes.extraLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .absoluteOffset(y = -10.dp)
+            )
         }
-        Spacer(modifier = Modifier.height(100.dp))
-        SimpleButton(
-            onClick = { navigateBack() },
-            nameOfButton = stringResource(R.string.login),
-            shape = MaterialTheme.shapes.extraLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .absoluteOffset(y = -10.dp)
-        )
     }
 }
 
@@ -255,13 +272,16 @@ private fun DatePickerDocked(
     ) {
         OutlinedTextField(
             value = selectedDate,
-            onValueChange = {},
+            onValueChange = { },
             label = { Text(stringResource(R.string.date_of_birth)) },
             readOnly = true,
             trailingIcon = {
                 IconAppBar(
                     icon = Icons.Default.DateRange,
-                    onClick = onClick,
+                    onClick = {
+                        datePickerState.selectedDateMillis = null
+                        onClick()
+                    },
                     contentDescription = stringResource(R.string.select_date)
                 )
             },
@@ -272,9 +292,7 @@ private fun DatePickerDocked(
 
         if (showDatePicker) {
             Popup(
-                onDismissRequest = {
-                    onDismissRequest(selectedDate)
-                },
+                onDismissRequest = { onDismissRequest(selectedDate) },
                 alignment = Alignment.TopStart
             ) {
                 Box(
@@ -288,6 +306,9 @@ private fun DatePickerDocked(
                         showModeToggle = false
                     )
                 }
+            }
+            if (selectedDate.isNotBlank()) {
+                onDismissRequest(selectedDate)
             }
         }
 

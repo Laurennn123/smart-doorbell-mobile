@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.java.websocket)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.storage)
+    // okhttp
+    implementation(libs.okhttp)
     // Work manager
     implementation(libs.androidx.work.runtime.ktx)
     // Datastore

@@ -187,70 +187,70 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SettingsScreen.`My Account`.name) {
-                    MyAccountScreen(
-                        userName = accountUiState.userName,
-                        email = accountUiState.email,
-                        address = accountUiState.address,
-                        contactNumber = accountUiState.contactNumber,
-                        birthDate = accountUiState.birthDate,
-                        editClick = { myAccountModel.updateClicked(buttonClick = "Edit") },
-                        addressClick = { myAccountModel.updateClicked(buttonClick = "Address") },
-                        contactClick = { myAccountModel.updateClicked(buttonClick = "Contact") },
-                        dateClick = { myAccountModel.updateClicked(buttonClick = "Birth Date")},
-                        changePassClick = {},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                    )
-                    if(myAccountModel.userButtonDetailClicked) {
-                        val buttonClicked = myAccountModel.buttonClicked
-                        if (buttonClicked == "Address") {
-                            InputDialog(
-                                typeOfInput = stringResource(R.string.input_address),
-                                nameOfInput = stringResource(R.string.address),
-                                onDismissRequest = { myAccountModel.onDismiss() },
-                                valueInputted = myAccountModel.address,
-                                onValueChange = { myAccountModel.address = it},
-                                cancelClick = { myAccountModel.onDismiss() },
-                                confirmClick = { myAccountModel.updateAddress() }
-                            )
-                        } else if (buttonClicked == "Contact") {
-                            InputDialog(
-                                typeOfInput = stringResource(R.string.input_contact_num),
-                                nameOfInput = stringResource(R.string.contact_num),
-                                onDismissRequest = { myAccountModel.onDismiss() },
-                                valueInputted = myAccountModel.contactNumber,
-                                onValueChange = { myAccountModel.contactNumber = it  },
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Decimal,
-                                    imeAction = ImeAction.Done
-                                ),
-                                cancelClick = { myAccountModel.onDismiss() },
-                                confirmClick = { myAccountModel.updateContactNumber() }
-                            )
-                        } else if (buttonClicked == "Edit") {
-                            InputDialog(
-                                typeOfInput = stringResource(R.string.enter_username),
-                                nameOfInput = stringResource(R.string.username),
-                                onDismissRequest = { myAccountModel.onDismiss() },
-                                valueInputted = myAccountModel.userName,
-                                onValueChange = {
-                                    if (myAccountModel.userName.length <= 10) {
-                                        myAccountModel.userName = it
-                                    } else {
-                                        myAccountModel.userName = myAccountModel.userName.slice(0..9)
-                                    }
-                                },
-                                cancelClick = { myAccountModel.onDismiss() },
-                                confirmClick = { myAccountModel.updateUsername() }
-                            )
-                        } else if (buttonClicked == "Birth Date") {
-                            val birthDate =   BirthDatePicker(onDismissRequest = { myAccountModel.onDismiss() })
-                            if(birthDate.isNotBlank()) {
-                                myAccountModel.updateBirthDate(birthDate)
-                            }
-                        }
-                    }
+//                    MyAccountScreen(
+//                        userName = accountUiState.userName,
+//                        email = accountUiState.email,
+//                        address = accountUiState.address,
+//                        contactNumber = accountUiState.contactNumber,
+//                        birthDate = accountUiState.birthDate,
+//                        editClick = { myAccountModel.updateClicked(buttonClick = "Edit") },
+//                        addressClick = { myAccountModel.updateClicked(buttonClick = "Address") },
+//                        contactClick = { myAccountModel.updateClicked(buttonClick = "Contact") },
+//                        dateClick = { myAccountModel.updateClicked(buttonClick = "Birth Date")},
+//                        changePassClick = {},
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+//                    )
+//                    if(myAccountModel.userButtonDetailClicked) {
+//                        val buttonClicked = myAccountModel.buttonClicked
+//                        if (buttonClicked == "Address") {
+//                            InputDialog(
+//                                typeOfInput = stringResource(R.string.input_address),
+//                                nameOfInput = stringResource(R.string.address),
+//                                onDismissRequest = { myAccountModel.onDismiss() },
+//                                valueInputted = myAccountModel.address,
+//                                onValueChange = { myAccountModel.address = it},
+//                                cancelClick = { myAccountModel.onDismiss() },
+//                                confirmClick = { myAccountModel.updateAddress() }
+//                            )
+//                        } else if (buttonClicked == "Contact") {
+//                            InputDialog(
+//                                typeOfInput = stringResource(R.string.input_contact_num),
+//                                nameOfInput = stringResource(R.string.contact_num),
+//                                onDismissRequest = { myAccountModel.onDismiss() },
+//                                valueInputted = myAccountModel.contactNumber,
+//                                onValueChange = { myAccountModel.contactNumber = it  },
+//                                keyboardOptions = KeyboardOptions(
+//                                    keyboardType = KeyboardType.Decimal,
+//                                    imeAction = ImeAction.Done
+//                                ),
+//                                cancelClick = { myAccountModel.onDismiss() },
+//                                confirmClick = { myAccountModel.updateContactNumber() }
+//                            )
+//                        } else if (buttonClicked == "Edit") {
+//                            InputDialog(
+//                                typeOfInput = stringResource(R.string.enter_username),
+//                                nameOfInput = stringResource(R.string.username),
+//                                onDismissRequest = { myAccountModel.onDismiss() },
+//                                valueInputted = myAccountModel.userName,
+//                                onValueChange = {
+//                                    if (myAccountModel.userName.length <= 10) {
+//                                        myAccountModel.userName = it
+//                                    } else {
+//                                        myAccountModel.userName = myAccountModel.userName.slice(0..9)
+//                                    }
+//                                },
+//                                cancelClick = { myAccountModel.onDismiss() },
+//                                confirmClick = { myAccountModel.updateUsername() }
+//                            )
+//                        } else if (buttonClicked == "Birth Date") {
+//                            val birthDate =   BirthDatePicker(onDismissRequest = { myAccountModel.onDismiss() })
+//                            if(birthDate.isNotBlank()) {
+//                                myAccountModel.updateBirthDate(birthDate)
+//                            }
+//                        }
+//                    }
                 }
 
                 composable(route = SmartDoorbellScreen.Login.name) {
@@ -430,6 +430,7 @@ fun SmartDoorbellApp(
 fun BackAndUserAppBar(
     navigateUp: () -> Unit,
     currentDestination: String,
+    onClickAccount: () -> Unit,
     modifier: Modifier = Modifier) {
     TopAppBar(
         title = {},
@@ -442,10 +443,10 @@ fun BackAndUserAppBar(
             )
         },
         actions = {
-            if (currentDestination != "Setting") {
+            if (currentDestination == "About Us") {
                 IconAppBar(
                     icon = Icons.Filled.AccountCircle,
-                    onClick = { },
+                    onClick = onClickAccount,
                     contentDescription = stringResource(id = R.string.user_account),
                 )
             }

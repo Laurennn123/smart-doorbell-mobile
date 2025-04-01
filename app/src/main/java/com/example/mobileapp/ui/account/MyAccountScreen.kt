@@ -1,11 +1,13 @@
 package com.example.mobileapp.ui.account
 
 import android.widget.Space
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -29,6 +31,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -40,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
@@ -53,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mobileapp.BackAndUserAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.components.DefaultIcon
 import com.example.mobileapp.ui.components.IconAppBar
@@ -78,33 +83,54 @@ fun MyAccountScreen(
     addressClick: () -> Unit,
     contactClick: () -> Unit,
     dateClick: () -> Unit,
-    changePassClick: () -> Unit
+    changePassClick: () -> Unit,
+    navigateUp: () -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        Text(text = stringResource(id = R.string.my_account),
-            style = MaterialTheme.typography.displayLarge,
-            modifier = Modifier.align(alignment = Alignment.Start)
-        )
-        Spacer(modifier = Modifier.height(60.dp))
-        UserProfile(
-            userName = userName,
-            email = email,
-            editClick = editClick
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        UserDetails(
-            address = address,
-            contactNumber = contactNumber,
-            addressClick = addressClick,
-            date = birthDate,
-            contactClick = contactClick,
-            dateClick = dateClick,
-            changePassClick = changePassClick
-        )
-
+    Scaffold(
+        topBar = { BackAndUserAppBar(
+            navigateUp = navigateUp,
+            currentDestination = "My Account",
+            onClickAccount = {}
+        ) }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF77C89D), Color(0xFF006663)
+                        )
+                    )
+                )
+                .padding(innerPadding)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier
+            ) {
+                Text(text = stringResource(id = R.string.my_account),
+                    style = MaterialTheme.typography.displayLarge,
+                    modifier = Modifier.align(alignment = Alignment.Start)
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+                UserProfile(
+                    userName = userName,
+                    email = email,
+                    editClick = editClick
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                UserDetails(
+                    address = address,
+                    contactNumber = contactNumber,
+                    addressClick = addressClick,
+                    date = birthDate,
+                    contactClick = contactClick,
+                    dateClick = dateClick,
+                    changePassClick = changePassClick
+                )
+            }
+        }
     }
 }
 
@@ -190,7 +216,7 @@ private fun UserIdentityButton(
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
-            .padding(vertical = dimensionResource(R.dimen.padding_medium))
+            .padding(vertical = dimensionResource(R.dimen.padding_small))
             .fillMaxWidth()
             .height(60.dp)
     ) {

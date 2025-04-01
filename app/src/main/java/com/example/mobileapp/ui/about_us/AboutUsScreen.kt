@@ -34,13 +34,14 @@ object AboutUsScreenDestination: NavigationDestination {
 fun AboutUsScreen(
     modifier: Modifier,
     navigateUp: () -> Unit,
-    currentDestination: String
+    onClickAccount: () -> Unit
 ) {
 
     Scaffold(
         topBar = { BackAndUserAppBar(
             navigateUp = navigateUp,
-            currentDestination = currentDestination
+            currentDestination = "About Us",
+            onClickAccount = onClickAccount
         ) }
     ) { innerPadding ->
         Box(

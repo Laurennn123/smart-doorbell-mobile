@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AccountRepository {
     suspend fun createAccount(account: Account)
-    fun getStatus(email: String): Flow<Boolean>
     fun getName(email: String): Flow<String>
+    fun getBirthdate(email: String): Flow<String>
+    suspend fun updateBirthDate(dateBirth: String, email: String)
 }

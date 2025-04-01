@@ -8,7 +8,7 @@
     <string name="general_settings">General Settings</string>
     <string name="about_us">About Us</string>
     <string name="logout">Log Out</string>
-    <string name="user_name">Welcome back, %1$s</string>
+    <string name="user_name">Welcome, %1$s</string>
     <string name="front_door">Check your frontdoor!</string>
     <string name="home_screen">Home</string>
     <string name="arrow_back">Arrow Back</string>

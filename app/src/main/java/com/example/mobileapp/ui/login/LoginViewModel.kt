@@ -68,11 +68,11 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
 
     @OptIn(UnstableApi::class)
     suspend fun isEmailPassRegistered(loginDetails: LoginUiDetails): Boolean {
+        val TAG = "authentication"
         auth = FirebaseAuth.getInstance()
         val email = _loginUiState.value.loginDetails.email
         val password = _loginUiState.value.loginDetails.password
         var isSucess = false
-        val TAG = "database"
         try {
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {

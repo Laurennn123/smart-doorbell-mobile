@@ -57,21 +57,6 @@ object HomeScreenDestination : NavigationDestination {
     override val route = "HomeScreen"
 }
 
-fun showNotification(context: Context) {
-    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    val intent = Intent(context, MainActivity::class.java)
-    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-    val messageAboutFrontDoor = NotificationCompat.Builder(context, "front_door_channel")
-        .setSmallIcon(R.drawable.smart)
-        .setContentTitle("Check your front door!")
-        .setContentText("There is someone outside on your front door, check it right now.")
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setAutoCancel(true)
-        .setContentIntent(pendingIntent)
-        .build()
-    notificationManager.notify(1, messageAboutFrontDoor)
-}
-
 @Composable
 fun HomeScreen(
 //    onClick: () -> Unit,

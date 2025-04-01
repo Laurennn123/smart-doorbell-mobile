@@ -51,7 +51,8 @@ fun SettingsScreen(
     Scaffold(
         topBar = { BackAndUserAppBar(
             navigateUp = navigateUp,
-            currentDestination = currentDestination
+            currentDestination = currentDestination,
+            onClickAccount = {}
         ) }
     ) { innerPadding ->
         Box(

@@ -15,7 +15,7 @@ object AppViewModelProvider {
         initializer { SignUpViewModel(smartDoorbellApplication().container.accountRepository) }
         initializer { LoginViewModel(smartDoorbellApplication().userStatusRepository) }
         initializer { HomeScreenModel(smartDoorbellApplication().container.accountRepository) }
-        initializer { MyAccountViewModel() }
+        initializer { MyAccountViewModel(smartDoorbellApplication().container.accountRepository) }
     }
 }
 

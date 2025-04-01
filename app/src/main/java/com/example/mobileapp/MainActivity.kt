@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -43,6 +44,15 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val tag = "esp32"
+        val service = ESP32Notification()
+        val serviceIntent = Intent(this, ESP32Notification::class.java)
+        startService(serviceIntent)
+        if (service.isRunning) {
+            Log.d(tag, "yes")
+        } else {
+            Log.d(tag, "no")
+        }
         createNotificationChannel()
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(
@@ -95,7 +105,8 @@ class MainActivity : ComponentActivity() {
         private val CAMERAX_NOTIFICATION_PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.POST_NOTIFICATIONS
+            Manifest.permission.POST_NOTIFICATIONS,
+            Manifest.permission.FOREGROUND_SERVICE
         )
     }
 }

@@ -13,5 +13,11 @@ data class Account(
     val reEnterPassword: String = "",
     val dateOfBirth: String = "",
     val gender: String = "",
-    val isAccountLoggedIn: Boolean = true
+    val userName: String = "Username",
+    val address: String = "Address",
+    val contactNumber: String = "Contact Number",
+//    val isAccountLoggedIn: Boolean = true
+    // username
+    // address
+    // contact number
 )

@@ -2,6 +2,7 @@ package com.example.mobileapp.ui.navigation
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -42,7 +43,10 @@ import com.example.mobileapp.ui.SplashScreen
 import com.example.mobileapp.ui.SplashScreenDestination
 import com.example.mobileapp.ui.about_us.AboutUsScreen
 import com.example.mobileapp.ui.about_us.AboutUsScreenDestination
+import com.example.mobileapp.ui.account.BirthDatePicker
+import com.example.mobileapp.ui.account.MyAccountScreen
 import com.example.mobileapp.ui.account.MyAccountScreenDestination
+import com.example.mobileapp.ui.account.MyAccountViewModel
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -51,11 +55,13 @@ fun SmartDoorBellNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     homeViewModel: HomeScreenModel = viewModel(factory = AppViewModelProvider.Factory),
-    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    myAccountViewModel: MyAccountViewModel = viewModel(factory = AppViewModelProvider.Factory)
     ) {
 
     val userSession = loginViewModel.userSession.collectAsState()
-    val fullNameState by homeViewModel.fullName.collectAsState()
+    val fullName by homeViewModel.fullName.collectAsState()
+    val birthDate by myAccountViewModel.birthDateDb.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var settingsOptionSelect by remember { mutableStateOf("") }
@@ -68,7 +74,9 @@ fun SmartDoorBellNavHost(
     ) {
         composable(route = SplashScreenDestination.route) {
             SplashScreen(
-                navigateToHomeScreen = { navController.navigate(route = HomeScreenDestination.route) },
+                navigateToHomeScreen = { navController.navigate(route = HomeScreenDestination.route) {
+                    popUpTo(0) { inclusive = true }
+                } },
                 navigateToWelcomeScreen = { navController.navigate(route = WelcomeDestination.route) },
                 isUserLoggedIn = userSession.value.isUserLoggedIn
             )
@@ -95,8 +103,9 @@ fun SmartDoorBellNavHost(
                     .fillMaxSize()
                     .statusBarsPadding(),
                 navigateToHomeScreen = {
-                    navController.popBackStack()
-                    navController.navigate(route = HomeScreenDestination.route)
+                    navController.navigate(route = HomeScreenDestination.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 },
                 onSignUpClick = { navController.navigate(route = SignUpDestination.route) },
                 navigateToDialog = { message, emailInput ->
@@ -108,19 +117,10 @@ fun SmartDoorBellNavHost(
                 InvalidInputDialog(
                     message = errorMessage,
                     email = email,
-                    onDismissRequest = {
-                        if (errorMessage == "The supplied auth credential is incorrect, malformed or has expired.") {
-                            navController.navigate(route = SignUpDestination.route)
-                        } else {
-                            errorMessage = ""
-                        }
-                    },
+                    onDismissRequest = { errorMessage = "" },
                     onCreateAccount = {
-                        if (errorMessage != "The supplied auth credential is incorrect, malformed or has expired.") {
-                            errorMessage = ""
-                            navController.navigate(route = SignUpDestination.route)
-                        }
                         errorMessage = ""
+                        navController.navigate(route = SignUpDestination.route)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -129,7 +129,7 @@ fun SmartDoorBellNavHost(
 
         composable(route = SignUpDestination.route) {
             SignUpScreen(
-                navigateBack = { navController.popBackStack() },
+                navigateBack = { navController.navigateUp() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxSize()
@@ -140,10 +140,10 @@ fun SmartDoorBellNavHost(
         composable(route = HomeScreenDestination.route) {
             homeViewModel.setFullName(email = userSession.value.userEmail)
             HomeScreen(
-                fullName = fullNameState,
+                fullName = fullName,
                 context = context,
-                onClickSettings = { navController.navigate(route = SettingScreenDestination.route)},
-                onClickAccount = {},
+                onClickSettings = { navController.navigate(route = SettingScreenDestination.route) },
+                onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) } ,
                 modifier =  Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
@@ -154,10 +154,7 @@ fun SmartDoorBellNavHost(
             SettingsScreen(
                 settings = settings,
                 onClick = { settingsOptionSelect = it },
-                navigateUp = {
-                    navController.popBackStack()
-                    navController.navigate(route = HomeScreenDestination.route)
-                },
+                navigateUp = { navController.navigateUp() },
                 currentDestination = navController.currentDestination?.route.toString(),
                 modifier = Modifier
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
@@ -167,17 +164,14 @@ fun SmartDoorBellNavHost(
                 navController.navigate(route = AboutUsScreenDestination.route)
             } else if(settingsOptionSelect == "My Account") {
                 settingsOptionSelect = ""
-                navController.navigate(route = AboutUsScreenDestination.route)
+                navController.navigate(route = MyAccountScreenDestination.route)
             }
         }
 
         composable(route = AboutUsScreenDestination.route)  {
             AboutUsScreen(
-                navigateUp = {
-                    navController.popBackStack()
-                    navController.navigate(route = SettingScreenDestination.route)
-                },
-                currentDestination = navController.currentDestination?.route.toString(),
+                navigateUp = { navController.navigateUp() },
+                onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxSize()
@@ -186,7 +180,37 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = MyAccountScreenDestination.route) {
-            //
+            val TAG = "check"
+            myAccountViewModel.setBirthDate(email = userSession.value.userEmail)
+            Log.d(TAG, birthDate)
+            MyAccountScreen(
+                userName = "",
+                email = userSession.value.userEmail,
+                address = "",
+                contactNumber = "",
+                birthDate = birthDate,
+                editClick = {  },
+                addressClick = {  },
+                contactClick = {  },
+                dateClick = { myAccountViewModel.updateClicked(buttonClick = "Birth Date") },
+                changePassClick = { },
+                navigateUp = { navController.navigateUp() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+            )
+            if (myAccountViewModel.userButtonDetailClicked) {
+                // Do the update query in here and get it 
+                val buttonClicked = myAccountViewModel.buttonClicked
+                if (buttonClicked == "Birth Date") {
+                    val newBirthDate = BirthDatePicker(onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "") } )
+                    if(newBirthDate.isNotBlank()) {
+                        myAccountViewModel.updateBirthDate(dateBirth = newBirthDate, email = userSession.value.userEmail)
+                        myAccountViewModel.updateClicked(buttonClick = "")
+                    }
+                }
+            }
+
         }
 
     }
@@ -205,6 +229,8 @@ private fun InvalidInputDialog(
         title = {
             if (message == "Given String is empty or null" || message == "The email address is badly formatted.") {
                 Text(text = "Enter your email, and password to log in.")
+            } else if(message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
+                Text(text = "No internet connection")
             } else {
                 Text(text = "Can't find account")
             }
@@ -212,6 +238,8 @@ private fun InvalidInputDialog(
         text = {
             if (message == "Given String is empty or null" || message == "The email address is badly formatted.") {
                 Text(text = "Either your email is badly formatted or no input both email and password")
+            } else if(message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
+                Text(text = "Please connect to a Wifi or use data.")
             } else {
                 Text(text = "We can't find an account with $email.")
             }
@@ -219,9 +247,16 @@ private fun InvalidInputDialog(
         onDismissRequest = { onDismissRequest() },
         confirmButton = {
             TextButton(
-                onClick = { onDismissRequest() }
+                onClick = {
+                    if (message == "Given String is empty or null" || message == "The email address is badly formatted."
+                        || message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
+                        onDismissRequest()
+                    } else {
+                        onCreateAccount()
+                    }
+                }
             ) {
-                if (message == "Given String is empty or null" || message == "The email address is badly formatted.") {
+                if (message == "Given String is empty or null" || message == "The email address is badly formatted." || message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
                     Text(
                         text = "OK",
                         color = Color.Blue
@@ -236,14 +271,20 @@ private fun InvalidInputDialog(
         },
         dismissButton = {
             TextButton(
-                onClick = onCreateAccount
+                onClick = {
+                    if (message == "Given String is empty or null" || message == "The email address is badly formatted.") {
+                        onCreateAccount()
+                    } else {
+                        onDismissRequest()
+                    }
+                }
             ) {
                 if (message == "Given String is empty or null" || message == "The email address is badly formatted.") {
                     Text(
                         text = "CREATE NEW ACCOUNT",
                         color = Color.Red
                     )
-                } else {
+                } else if (message == "The supplied auth credential is incorrect, malformed or has expired.") {
                     Text(
                         text = "TRY AGAIN",
                         color = Color.Red

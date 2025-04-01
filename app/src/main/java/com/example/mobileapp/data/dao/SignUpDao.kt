@@ -12,9 +12,15 @@ interface SignUpDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAccount(account: Account)
 
-    @Query("SELECT isAccountLoggedIn FROM Account WHERE email = :email")
-    fun getStatus(email: String): Flow<Boolean>
+//    @Query("SELECT isAccountLoggedIn FROM Account WHERE email = :email")
+//    fun getStatus(email: String): Flow<Boolean>
 
     @Query("SELECT fullName FROM Account WHERE email = :email")
     fun getName(email: String): Flow<String>
+
+    @Query("SELECT dateOfBirth FROM Account WHERE email = :email")
+    fun getBirthDate(email: String): Flow<String>
+
+    @Query("UPDATE Account SET dateOfBirth = :dateBirth WHERE email = :email")
+    suspend fun updateBirthDate(dateBirth: String, email: String)
 }

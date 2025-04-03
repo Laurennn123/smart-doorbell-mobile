@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
@@ -108,7 +110,7 @@ fun HomeScreen(
                 LiveStream(modifier = Modifier
                     .fillMaxWidth()
                     .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
-                    .height(300.dp))
+                    .height(800.dp))
                 Actions(
                     onClickAlarm = {
 //                        val index = homeViewModel.index
@@ -118,21 +120,22 @@ fun HomeScreen(
 //                        homeViewModel.index++
 //                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
                         // to log out and reset the email session
-                        loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
+//                        loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
                         homeViewModel.sendMessageToESP32("~")
                     },
                     onClickUnlock = {
-//                        showNotification(context = context)
+                        homeViewModel.doorClick()
                         homeViewModel.sendMessageToESP32("!")
-                    }
+                    },
+                    isUnlockDoorClick = homeViewModel.isUnlockDoorClicked
                 )
                 MessagePanel(
                     messageValue = userMessage,
                     userMessage = { userMessage = it },
                     onClickClear = { userMessage = "" },
                     onClickEnter = {
-                        userMessage = ""
                         homeViewModel.sendMessageToESP32(userMessage)
+                        userMessage = ""
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -203,7 +206,9 @@ private fun LiveStream(modifier: Modifier = Modifier) {
 @Composable
 private fun Actions(
     onClickUnlock: () -> Unit,
-    onClickAlarm: () -> Unit) {
+    onClickAlarm: () -> Unit,
+    isUnlockDoorClick: Boolean
+) {
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = stringResource(id = R.string.actions),
@@ -212,7 +217,7 @@ private fun Actions(
     Spacer(modifier = Modifier.height(8.dp))
     SimpleButton(
         onClick = onClickUnlock,
-        nameOfButton = stringResource(id = R.string.unlock_door),
+        nameOfButton = if (isUnlockDoorClick) stringResource(id = R.string.lock_door) else stringResource(id = R.string.unlock_door),
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge
     )

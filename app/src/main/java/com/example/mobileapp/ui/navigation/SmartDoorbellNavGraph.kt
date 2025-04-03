@@ -5,8 +5,12 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -20,6 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -44,6 +51,7 @@ import com.example.mobileapp.ui.SplashScreenDestination
 import com.example.mobileapp.ui.about_us.AboutUsScreen
 import com.example.mobileapp.ui.about_us.AboutUsScreenDestination
 import com.example.mobileapp.ui.account.BirthDatePicker
+import com.example.mobileapp.ui.account.InputDialog
 import com.example.mobileapp.ui.account.MyAccountScreen
 import com.example.mobileapp.ui.account.MyAccountScreenDestination
 import com.example.mobileapp.ui.account.MyAccountViewModel
@@ -62,10 +70,15 @@ fun SmartDoorBellNavHost(
     val userSession = loginViewModel.userSession.collectAsState()
     val fullName by homeViewModel.fullName.collectAsState()
     val birthDate by myAccountViewModel.birthDateDb.collectAsState()
+    val username by myAccountViewModel.userNameDb.collectAsState()
+    val contactNumber by myAccountViewModel.contactNumberDb.collectAsState()
+    val address by myAccountViewModel.addressDb.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var settingsOptionSelect by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    val scrollState = rememberScrollState()
+
 
     NavHost(
         navController = navController,
@@ -146,7 +159,8 @@ fun SmartDoorBellNavHost(
                 onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) } ,
                 modifier =  Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                    .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+                    .verticalScroll(scrollState),
             )
         }
 
@@ -165,6 +179,17 @@ fun SmartDoorBellNavHost(
             } else if(settingsOptionSelect == "My Account") {
                 settingsOptionSelect = ""
                 navController.navigate(route = MyAccountScreenDestination.route)
+            } else if(settingsOptionSelect == "Log Out") {
+                LogOutDialog(
+                    onClickNo = { settingsOptionSelect = "" },
+                    onClickYes = {
+                        settingsOptionSelect = ""
+                        loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
+                        navController.navigate(route = LoginDestination.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
 
@@ -181,17 +206,17 @@ fun SmartDoorBellNavHost(
 
         composable(route = MyAccountScreenDestination.route) {
             val TAG = "check"
-            myAccountViewModel.setBirthDate(email = userSession.value.userEmail)
+            myAccountViewModel.setEmail(email = userSession.value.userEmail)
             Log.d(TAG, birthDate)
             MyAccountScreen(
-                userName = "",
+                userName = username,
                 email = userSession.value.userEmail,
-                address = "",
-                contactNumber = "",
-                birthDate = birthDate,
-                editClick = {  },
-                addressClick = {  },
-                contactClick = {  },
+                address = address,
+                contactNumber = contactNumber,
+                birthDate = birthDate,  // birthDate,
+                editClick = { myAccountViewModel.updateClicked(buttonClick = "Username")  },
+                addressClick = { myAccountViewModel.updateClicked(buttonClick = "Address") },
+                contactClick = { myAccountViewModel.updateClicked(buttonClick = "Contact Number") },
                 dateClick = { myAccountViewModel.updateClicked(buttonClick = "Birth Date") },
                 changePassClick = { },
                 navigateUp = { navController.navigateUp() },
@@ -208,6 +233,58 @@ fun SmartDoorBellNavHost(
                         myAccountViewModel.updateBirthDate(dateBirth = newBirthDate, email = userSession.value.userEmail)
                         myAccountViewModel.updateClicked(buttonClick = "")
                     }
+                } else if (buttonClicked == "Address") {
+                    InputDialog(
+                        typeOfInput = stringResource(R.string.input_address),
+                        nameOfInput = stringResource(R.string.address),
+                        onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        valueInputted = myAccountViewModel.myAccountUiState.address,
+                        onValueChange = {
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(address = it)
+                        },
+                        cancelClick = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        confirmClick = {
+                            myAccountViewModel.updateAddress(address = myAccountViewModel.myAccountUiState.address, email = userSession.value.userEmail)
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(address = "")
+                            myAccountViewModel.updateClicked(buttonClick = "")
+                        }
+                    )
+                } else if (buttonClicked == "Contact Number") {
+                    InputDialog(
+                        typeOfInput = stringResource(R.string.input_contact_num),
+                        nameOfInput = stringResource(R.string.contact_num),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Done
+                        ),
+                        onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        valueInputted = myAccountViewModel.myAccountUiState.contactNumber,
+                        onValueChange = {
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(contactNumber = it)
+                        },
+                        cancelClick = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        confirmClick = {
+                            myAccountViewModel.updateContactNumber(address = myAccountViewModel.myAccountUiState.contactNumber, email = userSession.value.userEmail)
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(contactNumber = "")
+                            myAccountViewModel.updateClicked(buttonClick = "")
+                        }
+                    )
+                } else if (buttonClicked == "Username") {
+                    InputDialog(
+                        typeOfInput = stringResource(R.string.enter_message),
+                        nameOfInput = stringResource(R.string.username),
+                        onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        valueInputted = myAccountViewModel.myAccountUiState.userName,
+                        onValueChange = {
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(userName = it)
+                        },
+                        cancelClick = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        confirmClick = {
+                            myAccountViewModel.updateUsername(address = myAccountViewModel.myAccountUiState.userName, email = userSession.value.userEmail)
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(userName = "")
+                            myAccountViewModel.updateClicked(buttonClick = "")
+                        }
+                    )
                 }
             }
 
@@ -290,6 +367,40 @@ private fun InvalidInputDialog(
                         color = Color.Red
                     )
                 }
+            }
+        },
+        containerColor = Color.DarkGray,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun LogOutDialog(
+    onClickNo: () -> Unit,
+    onClickYes: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        title = { Text("Are you sure do you want to log out?") },
+        onDismissRequest = { onClickNo() },
+        dismissButton = {
+            TextButton(
+                onClick = onClickNo
+            ) {
+                Text(
+                    text = "NO",
+                    color = Color.White
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onClickYes
+            ) {
+                Text(
+                    text = "YES",
+                    color = Color.Red
+                )
             }
         },
         containerColor = Color.DarkGray,

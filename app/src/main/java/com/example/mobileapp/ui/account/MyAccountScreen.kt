@@ -59,6 +59,7 @@ import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.BackAndUserAppBar
 import com.example.mobileapp.R
+import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.DefaultIcon
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.ImageContainer
@@ -84,8 +85,10 @@ fun MyAccountScreen(
     contactClick: () -> Unit,
     dateClick: () -> Unit,
     changePassClick: () -> Unit,
-    navigateUp: () -> Unit
+    navigateUp: () -> Unit,
+    myAccountViewModel: MyAccountViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+
     Scaffold(
         topBar = { BackAndUserAppBar(
             navigateUp = navigateUp,
@@ -123,8 +126,8 @@ fun MyAccountScreen(
                 UserDetails(
                     address = address,
                     contactNumber = contactNumber,
-                    addressClick = addressClick,
                     date = birthDate,
+                    addressClick = addressClick,
                     contactClick = contactClick,
                     dateClick = dateClick,
                     changePassClick = changePassClick
@@ -230,7 +233,8 @@ private fun UserIdentityButton(
             Spacer(modifier = Modifier.width(20.dp))
             Text(
                 text = nameOfButton,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
             )
         }
     }

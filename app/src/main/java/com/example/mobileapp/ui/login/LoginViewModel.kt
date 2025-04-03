@@ -88,22 +88,6 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
     }
 
     @OptIn(UnstableApi::class)
-    suspend fun getFullName():String {
-        var fullName = ""
-        database.collection("Account").get()
-            .addOnSuccessListener { data ->
-                for (document in data) {
-                    val email = document.id
-                    if (email == _loginUiState.value.loginDetails.email) {
-                        fullName = document.get("Full Name").toString()
-                        break
-                    }
-                }
-            }.await()
-        return fullName
-    }
-
-    @OptIn(UnstableApi::class)
     suspend fun sendPasswordResetEmail() {
         val TAG = "database"
         Firebase.auth.sendPasswordResetEmail(_loginUiState.value.loginDetails.email).

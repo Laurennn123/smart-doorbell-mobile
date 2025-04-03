@@ -44,6 +44,13 @@ class HomeScreenModel(private val accountRepository: AccountRepository) : ViewMo
     var userMessage by mutableStateOf("")
         private set
 
+    var isUnlockDoorClicked by mutableStateOf(false)
+        private set
+
+    fun doorClick() {
+        isUnlockDoorClicked = !isUnlockDoorClicked
+    }
+
     var index by mutableStateOf(0)
 
     fun updateMessage(userTyped: String) {
@@ -53,6 +60,8 @@ class HomeScreenModel(private val accountRepository: AccountRepository) : ViewMo
     fun clearMessage() {
         userMessage = ""
     }
+
+
 
     fun sendMessageToESP32(message: String ) {
         CoroutineScope(Dispatchers.IO).launch {

@@ -134,7 +134,7 @@ fun SmartDoorbellApp(
 ) {
 
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val accountUiState by myAccountModel.accountUiState.collectAsState()
+//    val accountUiState by myAccountModel.accountUiState.collectAsState()
     val currentScreen = backStackEntry?.destination?.route
     var settingsSelect by rememberSaveable { mutableStateOf("") }
     val homeUiState by homeViewModel.uiState.collectAsState()

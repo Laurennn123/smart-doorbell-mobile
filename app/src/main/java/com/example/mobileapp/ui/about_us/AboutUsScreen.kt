@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddHome
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -67,7 +69,7 @@ fun AboutUsScreen(
                 )
                 Spacer(modifier = Modifier.height(100.dp))
                 DefaultIcon(
-                    icon = Icons.Default.Camera,
+                    icon = Icons.Default.Home,
                     nameOfIcon = "Our Logo",
                     modifier = Modifier.size(100.dp)
                 )

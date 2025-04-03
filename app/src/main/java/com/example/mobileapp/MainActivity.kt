@@ -117,20 +117,20 @@ fun ESP32VideoStream() {
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp),
+            .height(800.dp),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
                 settings.loadWithOverviewMode = true
                 settings.useWideViewPort = true
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                settings.builtInZoomControls = false  // Disable zoom controls
+                settings.builtInZoomControls = false
                 settings.displayZoomControls = false
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         view?.evaluateJavascript("""
                             (function() {
-                                document.body.style.height = "300px";  
+                                document.body.style.height = "800px";  
                                 document.body.style.overflow = "hidden"; 
                                 document.documentElement.style.overflow = "hidden";
                             })();

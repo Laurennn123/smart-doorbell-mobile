@@ -71,7 +71,7 @@ object SignUpDestination : NavigationDestination {
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
-    navigateBack: () -> Unit,
+    navigateBack: (String) -> Unit,
     signUpViewModel: SignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
 
     val coroutineScope = rememberCoroutineScope()
@@ -113,12 +113,26 @@ fun SignUpScreen(
                 Button(
                     onClick = {
                         signUpViewModel.signUpClick()
+
                         coroutineScope.launch {
-                            signUpViewModel.addAccountCloud()
-                            signUpViewModel.addAccountCloudInformation()
-                            signUpViewModel.addLocalAccount()
-                            withContext(Dispatchers.Main) {
-                                navigateBack()
+                            if (signUpViewModel.signUpUiState.signUpDetails.password != signUpViewModel.signUpUiState.signUpDetails.reEnterPassword) {
+                                signUpViewModel.updateErrorMessage("Not equal password")
+                            } else {
+                                signUpViewModel.updateErrorMessage("")
+                                signUpViewModel.addAccountCloud()
+                            }
+                            if (signUpViewModel.errorMessage.isBlank()) {
+                                signUpViewModel.addAccountCloudInformation()
+                                signUpViewModel.addLocalAccount()
+                                withContext(Dispatchers.Main) {
+                                    signUpViewModel.signUpClick()
+                                    navigateBack("")
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    signUpViewModel.signUpClick()
+                                    navigateBack(signUpViewModel.errorMessage)
+                                }
                             }
                         }
                     },
@@ -147,7 +161,7 @@ fun SignUpScreen(
             }
             Spacer(modifier = Modifier.height(100.dp))
             SimpleButton(
-                onClick = { navigateBack() },
+                onClick = { navigateBack("") },
                 nameOfButton = stringResource(R.string.login),
                 shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier

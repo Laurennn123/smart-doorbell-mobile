@@ -49,7 +49,6 @@ import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
-import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.navigation.NavigationDestination
@@ -75,8 +74,6 @@ fun HomeScreen(
     // use the datastore log in to log out
 //    val userStatusState = loginViewModel.userState.collectAsState()
     val userSession = loginViewModel.userSession.collectAsState()
-
-    context.getSystemService(NotificationManager::class.java)
 
     Scaffold(
         topBar = { HomeScreenAppBar(
@@ -309,11 +306,11 @@ private fun VisitorCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        ImageContainer(
-            faceImage = R.drawable.thomas_si_boss,
-            imageSize = 64,
-            contentDescription = "bossing"
-        )
+//        ImageContainer(
+//            faceImage = R.drawable.thomas_si_boss,
+//            imageSize = 64,
+//            contentDescription = "bossing"
+//        )
         Text(text = nameOfVisitors)
         if (isAuthorized) {
             Text(text = stringResource(R.string.authorized))

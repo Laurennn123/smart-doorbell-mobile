@@ -34,6 +34,8 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
     var signUpUiState by mutableStateOf(SignUpUiState())
         private set
 
+    var errorMessage by mutableStateOf("")
+
     var date by mutableStateOf("")
         private set
 
@@ -49,6 +51,11 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
     var isSignUpClicked by mutableStateOf(false)
         private set
 
+    fun updateErrorMessage(message: String) {
+        errorMessage = message
+    }
+
+
     fun signUpClick() {
         isSignUpClicked = !isSignUpClicked
     }
@@ -63,6 +70,7 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
         try {
             auth.createUserWithEmailAndPassword(signUpUiState.signUpDetails.email, signUpUiState.signUpDetails.password).await()
         } catch(e: Exception) {
+            errorMessage = e.message.toString()
             Log.d(TAG, "authentication")
             Log.d(TAG, e.message.toString())
         }
@@ -82,6 +90,7 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
         } catch(e: Exception) {
             Log.d(TAG, "cloud firestore database")
             Log.d(TAG, e.message.toString())
+            errorMessage = e.message.toString()
         }
     }
 
@@ -94,6 +103,7 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
         } catch(e: Exception) {
             Log.d(TAG, "local")
             Log.d(TAG, e.message.toString())
+            errorMessage = e.message.toString()
         }
 
     }
@@ -190,7 +200,8 @@ data class SignUpDetails(
     val gender: String = "",
     val userName: String = "Username",
     val address: String = "Address",
-    val contactNumber: String = "Contact Number"
+    val contactNumber: String = "Contact Number",
+    val profilePic: String = ""
 )
 
 fun SignUpDetails.toAccount(): Account = Account(
@@ -203,5 +214,6 @@ fun SignUpDetails.toAccount(): Account = Account(
     gender = gender,
     userName = userName,
     address = address,
-    contactNumber = contactNumber
+    contactNumber = contactNumber,
+    profilePic = profilePic
 )

@@ -73,6 +73,7 @@ fun SmartDoorBellNavHost(
     val username by myAccountViewModel.userNameDb.collectAsState()
     val contactNumber by myAccountViewModel.contactNumberDb.collectAsState()
     val address by myAccountViewModel.addressDb.collectAsState()
+    val profilePic by myAccountViewModel.profilePicDb.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var settingsOptionSelect by remember { mutableStateOf("") }
@@ -141,13 +142,26 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = SignUpDestination.route) {
+            var errorSignUpMessage by remember { mutableStateOf("") }
             SignUpScreen(
-                navigateBack = { navController.navigateUp() },
+                navigateBack = {
+                    if (it == "") {
+                        navController.navigateUp()
+                    } else {
+                        errorSignUpMessage = it
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxSize()
                     .statusBarsPadding()
             )
+            if (errorSignUpMessage.isNotBlank()) {
+                InvalidSignUpInputDialog(
+                    message = errorSignUpMessage,
+                    onClickOk = { errorSignUpMessage = "" }
+                )
+            }
         }
 
         composable(route = HomeScreenDestination.route) {
@@ -160,7 +174,8 @@ fun SmartDoorBellNavHost(
                 modifier =  Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                    .verticalScroll(scrollState),
+                    .verticalScroll(scrollState)
+                    .imePadding(),
             )
         }
 
@@ -220,6 +235,10 @@ fun SmartDoorBellNavHost(
                 dateClick = { myAccountViewModel.updateClicked(buttonClick = "Birth Date") },
                 changePassClick = { },
                 navigateUp = { navController.navigateUp() },
+                uri = profilePic,
+                updatePic = {
+                    myAccountViewModel.updateProfilePic(uri = it, email = userSession.value.userEmail)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
@@ -367,6 +386,57 @@ private fun InvalidInputDialog(
                         color = Color.Red
                     )
                 }
+            }
+        },
+        containerColor = Color.DarkGray,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun InvalidSignUpInputDialog(
+    message: String,
+    onClickOk: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        title = {
+            if (message == "The email address is badly formatted.") {
+                Text(text = "Your email is not formally formatted")
+            } else if(message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
+                Text(text = "No internet connection")
+            } else if(message == "Given String is empty or null") {
+                Text(text = "The email or password is empty")
+            } else if(message == "The given password is invalid. [ Password should be at least 6 characters ]") {
+                Text(text = "Password invalid")
+            } else if (message == "Not equal password") {
+                Text(text = "Password and re-enter password should match")
+            } else if (message == "The email address is already in use by another account.") {
+                Text(text = "The email is already registered use another email")
+            }
+        },
+        text = {
+            if (message == "The email address is badly formatted.") {
+                Text(text = "Enter your email in formally formatted with @")
+            } else if(message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
+                Text(text = "Please connect to a Wifi or use data")
+            } else if(message == "Given String is empty or null") {
+                Text(text = "Please fill in the email or password")
+            } else if(message == "The given password is invalid. [ Password should be at least 6 characters ]") {
+                Text(text = "Please input at least 6 characters")
+            } else if (message == "Not equal password") {
+                Text(text = "Please input again with match password")
+            }
+        },
+        onDismissRequest = { onClickOk() },
+        confirmButton = {
+            TextButton(
+                onClick = onClickOk
+            ) {
+                Text(
+                    text = "OK",
+                    color = Color.White
+                )
             }
         },
         containerColor = Color.DarkGray,

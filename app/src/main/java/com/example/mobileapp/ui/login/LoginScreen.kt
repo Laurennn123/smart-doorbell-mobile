@@ -171,11 +171,11 @@ fun LoginScreen(
                         coroutineScope.launch {
                             if (loginViewModel.isEmailPassRegistered(loginState.loginDetails)) {
                                 withContext(Dispatchers.Main) {
+                                    navigateToHomeScreen()
                                     loginViewModel.userStatusLogIn(
                                         isUserLogIn = !userSessionState.isUserLoggedIn,
                                         userEmail = loginState.loginDetails.email
                                     )
-                                    navigateToHomeScreen()
                                 }
                             } else {
                                 withContext(Dispatchers.Main) {

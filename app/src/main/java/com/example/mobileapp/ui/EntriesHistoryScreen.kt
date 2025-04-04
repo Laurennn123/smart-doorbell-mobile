@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.mobileapp.R
 import com.example.mobileapp.model.EntriesHistory
-import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.theme.MobileAppTheme
 
 @Composable
@@ -59,11 +58,11 @@ private fun EntriesCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        ImageContainer(
-            faceImage = entriesPerson.faceImage,
-            imageSize = 74,
-            contentDescription = "bossing"
-        )
+//        ImageContainer(
+//            faceImage = entriesPerson.faceImage,
+//            imageSize = 74,
+//            contentDescription = "bossing"
+//        )
         Spacer(Modifier.width(25.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),

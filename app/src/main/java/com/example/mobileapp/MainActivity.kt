@@ -44,16 +44,9 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val tag = "esp32"
-        val service = ESP32Notification()
-        val serviceIntent = Intent(this, ESP32Notification::class.java)
-        startService(serviceIntent)
-        if (service.isRunning) {
-            Log.d(tag, "yes")
-        } else {
-            Log.d(tag, "no")
-        }
         createNotificationChannel()
+        val esp32Service = Intent(applicationContext, ESP32Notification::class.java)
+        startService(esp32Service)
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(
                 this, CAMERAX_NOTIFICATION_PERMISSIONS, 0
@@ -106,7 +99,6 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.POST_NOTIFICATIONS,
-            Manifest.permission.FOREGROUND_SERVICE
         )
     }
 }

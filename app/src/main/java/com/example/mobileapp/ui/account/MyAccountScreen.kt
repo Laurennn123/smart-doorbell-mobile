@@ -80,13 +80,14 @@ fun MyAccountScreen(
     address: String,
     birthDate: String,
     contactNumber: String,
+    uri: String,
+    updatePic: (String) -> Unit,
     editClick: () -> Unit,
     addressClick: () -> Unit,
     contactClick: () -> Unit,
     dateClick: () -> Unit,
     changePassClick: () -> Unit,
     navigateUp: () -> Unit,
-    myAccountViewModel: MyAccountViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
 
     Scaffold(
@@ -120,6 +121,8 @@ fun MyAccountScreen(
                 UserProfile(
                     userName = userName,
                     email = email,
+                    uri = uri,
+                    updatePic = updatePic,
                     editClick = editClick
                 )
                 Spacer(modifier = Modifier.height(20.dp))
@@ -141,6 +144,8 @@ fun MyAccountScreen(
 private fun UserProfile(
     userName: String,
     email: String,
+    uri: String,
+    updatePic: (String) -> Unit,
     editClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -149,7 +154,8 @@ private fun UserProfile(
         modifier = modifier
     ) {
         ImageContainer(
-            faceImage = R.drawable.thomas_si_boss,
+            uri = uri,
+            updatePic = updatePic,
             imageSize = 150,
             contentDescription = "Bossing"
         )

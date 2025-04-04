@@ -28,6 +28,18 @@ class MyAccountViewModel(private val accountRepository: AccountRepository): View
     private val _userNameState = MutableStateFlow("")
     private val _addressState = MutableStateFlow("")
     private val _contactNumberState = MutableStateFlow("")
+    private val _profilePic = MutableStateFlow("")
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val profilePicDb: StateFlow<String> = _profilePic
+        .flatMapLatest { email ->
+            if (email.isNotBlank()) accountRepository.getProfilePic(email)
+            else flowOf("")
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = _profilePic.value
+        )
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -98,11 +110,18 @@ class MyAccountViewModel(private val accountRepository: AccountRepository): View
         }
     }
 
+    fun updateProfilePic(uri: String, email: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            accountRepository.updateProfilePic(uri = uri, email = email)
+        }
+    }
+
     fun setEmail(email: String) {
         _birthDateState.value = email
         _userNameState.value = email
         _addressState.value = email
         _contactNumberState.value = email
+        _profilePic.value = email
     }
 
     var userButtonDetailClicked by mutableStateOf(false)

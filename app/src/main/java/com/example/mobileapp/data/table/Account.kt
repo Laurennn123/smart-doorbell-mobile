@@ -16,8 +16,5 @@ data class Account(
     val userName: String = "Username",
     val address: String = "Address",
     val contactNumber: String = "Contact Number",
-//    val isAccountLoggedIn: Boolean = true
-    // username
-    // address
-    // contact number
+    val profilePic: String = ""
 )

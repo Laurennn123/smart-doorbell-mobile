@@ -27,7 +27,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
 import com.example.mobileapp.model.AuthorizedPerson
 import com.example.mobileapp.model.AuthorizedPersonModel
-import com.example.mobileapp.ui.components.ImageContainer
 import com.example.mobileapp.ui.theme.MobileAppTheme
 
 @Composable

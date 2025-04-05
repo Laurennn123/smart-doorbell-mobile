@@ -267,13 +267,13 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SmartDoorbellScreen.SignUp.name) {
-                    SignUpScreen(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .statusBarsPadding()
-                            .fillMaxSize(),
-                        navigateBack = {}
-                    )
+//                    SignUpScreen(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .statusBarsPadding()
+//                            .fillMaxSize(),
+//                        navigateBack = {}
+//                    )
                 }
 
                 composable(route = SettingsScreen.`About Us`.name) {

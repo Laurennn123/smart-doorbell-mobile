@@ -72,6 +72,7 @@ object SignUpDestination : NavigationDestination {
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     navigateBack: (String) -> Unit,
+    navigateToLogIn: () -> Unit,
     signUpViewModel: SignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
 
     val coroutineScope = rememberCoroutineScope()
@@ -161,7 +162,7 @@ fun SignUpScreen(
             }
             Spacer(modifier = Modifier.height(100.dp))
             SimpleButton(
-                onClick = { navigateBack("") },
+                onClick = { navigateToLogIn() },
                 nameOfButton = stringResource(R.string.login),
                 shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier

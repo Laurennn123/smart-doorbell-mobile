@@ -11,6 +11,8 @@ interface AccountRepository {
     fun getAddress(email: String): Flow<String>
     fun getContactNumber(email: String): Flow<String>
     fun getProfilePic(email: String): Flow<String>
+    fun getPassword(email: String): Flow<String>
+    suspend fun updatePassword(newPassword: String, email: String)
     suspend fun updateProfilePic(uri: String, email: String)
     suspend fun updateAddress(address: String, email: String)
     suspend fun updateContactNumber(contactNumber: String, email: String)

@@ -70,6 +70,7 @@ object LoginDestination : NavigationDestination {
 fun LoginScreen(
     modifier: Modifier = Modifier,
     navigateToHomeScreen: () -> Unit,
+    navigateToForgetPassword: () -> Unit,
     navigateToDialog: (String, String) -> Unit,
     onSignUpClick: () -> Unit,
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -147,11 +148,7 @@ fun LoginScreen(
                 Text(
                     text = stringResource(id = R.string.forgot_password),
                     modifier = Modifier
-                        .clickable {
-                            coroutineScope.launch {
-                                loginViewModel.sendPasswordResetEmail()
-                            }
-                        }
+                        .clickable { navigateToForgetPassword() }
                         .align(alignment = Alignment.End)
                         .drawBehind {
                             val strokeWidthPx = 1.dp.toPx()
@@ -169,13 +166,15 @@ fun LoginScreen(
                     onClick = {
                         loginViewModel.logInClicked()
                         coroutineScope.launch {
-                            if (loginViewModel.isEmailPassRegistered(loginState.loginDetails)) {
+                            val isRegistered = loginViewModel.isEmailPassRegistered(loginState.loginDetails)
+
+                            if (isRegistered) {
+                                loginViewModel.userStatusLogIn(
+                                    isUserLogIn = !userSessionState.isUserLoggedIn,
+                                    userEmail = loginState.loginDetails.email
+                                )
                                 withContext(Dispatchers.Main) {
                                     navigateToHomeScreen()
-                                    loginViewModel.userStatusLogIn(
-                                        isUserLogIn = !userSessionState.isUserLoggedIn,
-                                        userEmail = loginState.loginDetails.email
-                                    )
                                 }
                             } else {
                                 withContext(Dispatchers.Main) {

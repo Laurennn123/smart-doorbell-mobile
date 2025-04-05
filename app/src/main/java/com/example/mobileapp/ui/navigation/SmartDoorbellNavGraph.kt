@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -55,6 +57,14 @@ import com.example.mobileapp.ui.account.InputDialog
 import com.example.mobileapp.ui.account.MyAccountScreen
 import com.example.mobileapp.ui.account.MyAccountScreenDestination
 import com.example.mobileapp.ui.account.MyAccountViewModel
+import com.example.mobileapp.ui.forget_password.ForgetPasswordDestination
+import com.example.mobileapp.ui.forget_password.ForgetPasswordScreen
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -67,18 +77,22 @@ fun SmartDoorBellNavHost(
     myAccountViewModel: MyAccountViewModel = viewModel(factory = AppViewModelProvider.Factory)
     ) {
 
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
     val userSession = loginViewModel.userSession.collectAsState()
     val fullName by homeViewModel.fullName.collectAsState()
     val birthDate by myAccountViewModel.birthDateDb.collectAsState()
     val username by myAccountViewModel.userNameDb.collectAsState()
     val contactNumber by myAccountViewModel.contactNumberDb.collectAsState()
     val address by myAccountViewModel.addressDb.collectAsState()
+    val password by myAccountViewModel.passwordDb.collectAsState()
     val profilePic by myAccountViewModel.profilePicDb.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var settingsOptionSelect by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
 
 
     NavHost(
@@ -121,6 +135,9 @@ fun SmartDoorBellNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                navigateToForgetPassword = {
+                    navController.navigate(route = ForgetPasswordDestination.route)
+                },
                 onSignUpClick = { navController.navigate(route = SignUpDestination.route) },
                 navigateToDialog = { message, emailInput ->
                     errorMessage = message
@@ -141,22 +158,73 @@ fun SmartDoorBellNavHost(
             }
         }
 
+        composable(route = ForgetPasswordDestination.route) {
+            var errorMessageForgot by remember { mutableStateOf("") }
+            ForgetPasswordScreen(
+                onClickSend = {
+                    errorMessageForgot = loginViewModel.sendPasswordResetEmail(it)
+                    if (errorMessageForgot.isEmpty()) {
+                        errorMessageForgot = "Successfully Email Send"
+                    }
+                },
+                backToLoginClick = { navController.navigateUp() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxSize()
+                    .padding(start = 45.dp, bottom = 60.dp)
+            )
+            if (errorMessageForgot == "Successfully Email Send") {
+                SuccessMessageDialog(
+                    message = "Successfully Email Send",
+                    onClickContinue = {
+                        errorMessageForgot = ""
+                        navController.navigateUp()
+                    }
+                )
+            } else if (errorMessageForgot == "Given String is empty or null" || errorMessageForgot == "The email address is badly formatted.") {
+                InvalidEmailDialog(
+                    message = errorMessageForgot,
+                    onClickOk = {
+                        errorMessageForgot = ""
+                    }
+                )
+            }
+        }
+
         composable(route = SignUpDestination.route) {
             var errorSignUpMessage by remember { mutableStateOf("") }
+            val tag = "database"
             SignUpScreen(
                 navigateBack = {
                     if (it == "") {
-                        navController.navigateUp()
+                        errorSignUpMessage = "Success Sign Up"
                     } else {
                         errorSignUpMessage = it
                     }
                 },
+                navigateToLogIn = { navController.navigateUp() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxSize()
                     .statusBarsPadding()
             )
-            if (errorSignUpMessage.isNotBlank()) {
+            Log.d(tag, errorSignUpMessage)
+            if (errorSignUpMessage == "Success Sign Up") {
+                SuccessMessageDialog(
+                    message = "Success Sign Up",
+                    onClickContinue = {
+                        errorSignUpMessage = ""
+                        navController.navigateUp()
+                    }
+                )
+            } else if(
+                errorSignUpMessage == "The email address is badly formatted." ||
+                errorSignUpMessage == "Given String is empty or null" ||
+                errorSignUpMessage == "The given password is invalid. [ Password should be at least 6 characters ]" ||
+                errorSignUpMessage == "The email address is already in use by another account." ||
+                errorSignUpMessage == "A network error (such as timeout, interrupted connection or unreachable host) has occurred." ||
+                errorSignUpMessage == "Not equal password"
+            )  {
                 InvalidSignUpInputDialog(
                     message = errorSignUpMessage,
                     onClickOk = { errorSignUpMessage = "" }
@@ -165,7 +233,7 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = HomeScreenDestination.route) {
-            homeViewModel.setFullName(email = userSession.value.userEmail)
+            homeViewModel.setFullName(email = auth.currentUser?.email.toString())
             HomeScreen(
                 fullName = fullName,
                 context = context,
@@ -199,7 +267,10 @@ fun SmartDoorBellNavHost(
                     onClickNo = { settingsOptionSelect = "" },
                     onClickYes = {
                         settingsOptionSelect = ""
-                        loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
+                        auth.signOut()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
+                        }
                         navController.navigate(route = LoginDestination.route) {
                             popUpTo(0) { inclusive = true }
                         }
@@ -220,9 +291,8 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = MyAccountScreenDestination.route) {
-            val TAG = "check"
+            val coroutineScope = rememberCoroutineScope()
             myAccountViewModel.setEmail(email = userSession.value.userEmail)
-            Log.d(TAG, birthDate)
             MyAccountScreen(
                 userName = username,
                 email = userSession.value.userEmail,
@@ -233,7 +303,7 @@ fun SmartDoorBellNavHost(
                 addressClick = { myAccountViewModel.updateClicked(buttonClick = "Address") },
                 contactClick = { myAccountViewModel.updateClicked(buttonClick = "Contact Number") },
                 dateClick = { myAccountViewModel.updateClicked(buttonClick = "Birth Date") },
-                changePassClick = { },
+                changePassClick = { myAccountViewModel.updateClicked(buttonClick = "Password") },
                 navigateUp = { navController.navigateUp() },
                 uri = profilePic,
                 updatePic = {
@@ -304,6 +374,41 @@ fun SmartDoorBellNavHost(
                             myAccountViewModel.updateClicked(buttonClick = "")
                         }
                     )
+                } else if (buttonClicked == "Password") {
+                    InputDialog(
+                        typeOfInput = stringResource(R.string.enter_password),
+                        nameOfInput = stringResource(R.string.password),
+                        onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        valueInputted = myAccountViewModel.myAccountUiState.password,
+                        onValueChange = {
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(password = it)
+                        },
+                        cancelClick = { myAccountViewModel.updateClicked(buttonClick = "")  },
+                        confirmClick = {
+                            myAccountViewModel.updatePassword(newPassword = myAccountViewModel.myAccountUiState.password, email = userSession.value.userEmail)
+                            val tag = "password"
+                            val newPassword = myAccountViewModel.myAccountUiState.password
+                            val credential = EmailAuthProvider.getCredential(auth.currentUser?.email.toString(), password)
+                            val user = auth.currentUser
+                            coroutineScope.launch {
+                                try {
+                                    user?.reauthenticate(credential)?.await()
+                                    user?.updatePassword(newPassword)
+                                        ?.addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            val TAG = "password"
+                                            Log.d(TAG, "User password updated.")
+                                        }
+                                    }?.await()
+                                } catch (e: Exception) {
+                                    Log.d(tag, FirebaseAuth.getInstance().currentUser?.email.toString())
+                                    Log.d(tag, e.message.toString())
+                                }
+                            }
+                            myAccountViewModel.myAccountUiState = myAccountViewModel.myAccountUiState.copy(password = "")
+                            myAccountViewModel.updateClicked(buttonClick = "Password Updated")
+                        }
+                    )
                 }
             }
 
@@ -337,7 +442,7 @@ private fun InvalidInputDialog(
             } else if(message == "A network error (such as timeout, interrupted connection or unreachable host) has occurred.") {
                 Text(text = "Please connect to a Wifi or use data.")
             } else {
-                Text(text = "We can't find an account with $email.")
+                Text(text = "Either no account registered with $email or password is incorrect.")
             }
         },
         onDismissRequest = { onDismissRequest() },
@@ -470,6 +575,73 @@ fun LogOutDialog(
                 Text(
                     text = "YES",
                     color = Color.Red
+                )
+            }
+        },
+        containerColor = Color.DarkGray,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun InvalidEmailDialog(
+    message: String,
+    onClickOk: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        title = {
+            if(message == "Given String is empty or null") {
+                Text("The email input field is empty")
+            } else if (message == "The email address is badly formatted.") {
+                Text("Your email is not formally formatted")
+            }
+        },
+        onDismissRequest = onClickOk,
+        confirmButton = {
+            TextButton(
+                onClick = onClickOk
+            ) {
+                Text(
+                    text = "OK",
+                    color = Color.White
+                )
+            }
+        },
+        containerColor = Color.DarkGray,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun SuccessMessageDialog(
+    message: String,
+    onClickContinue: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        title = {
+            if(message == "Success Sign Up") {
+                Text("Your account has been successfully created.")
+            } else if (message == "Password Updated") {
+                Text("Your password has been changed successfully.")
+            } else if (message == "Successfully Email Send") {
+                Text("Check your mailbox!")
+            }
+        },
+        text = {
+            if (message == "Successfully Email Send") {
+                Text("We send you a link to reset your password.")
+            }
+        },
+        onDismissRequest = { onClickContinue() },
+        confirmButton = {
+            TextButton(
+                onClick = onClickContinue
+            ) {
+                Text(
+                    text = "Continue",
+                    color = Color.White
                 )
             }
         },

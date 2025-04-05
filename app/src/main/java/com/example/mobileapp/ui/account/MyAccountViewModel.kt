@@ -1,11 +1,14 @@
 package com.example.mobileapp.ui.account
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobileapp.data.repo.AccountRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +21,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class MyAccountViewModel(private val accountRepository: AccountRepository): ViewModel() {
 
@@ -29,6 +33,18 @@ class MyAccountViewModel(private val accountRepository: AccountRepository): View
     private val _addressState = MutableStateFlow("")
     private val _contactNumberState = MutableStateFlow("")
     private val _profilePic = MutableStateFlow("")
+    private val _password = MutableStateFlow("")
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val passwordDb: StateFlow<String> = _password
+        .flatMapLatest { email ->
+            if (email.isNotBlank()) accountRepository.getPassword(email)
+            else flowOf("")
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = _password.value
+        )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val profilePicDb: StateFlow<String> = _profilePic
@@ -116,12 +132,19 @@ class MyAccountViewModel(private val accountRepository: AccountRepository): View
         }
     }
 
+    fun updatePassword(newPassword: String, email: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            accountRepository.updatePassword(newPassword = newPassword, email = email)
+        }
+    }
+
     fun setEmail(email: String) {
         _birthDateState.value = email
         _userNameState.value = email
         _addressState.value = email
         _contactNumberState.value = email
         _profilePic.value = email
+        _password.value = email
     }
 
     var userButtonDetailClicked by mutableStateOf(false)
@@ -140,5 +163,6 @@ data class MyAccountUiState(
     var address: String = "",
     val contactNumber: String = "",
     val birthDate: String = "",
+    val password: String = ""
 )
 

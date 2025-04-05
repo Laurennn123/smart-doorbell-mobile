@@ -69,11 +69,7 @@ fun HomeScreen(
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier) {
 
-    val context = LocalContext.current
     var userMessage by rememberSaveable { mutableStateOf("") }
-    // use the datastore log in to log out
-//    val userStatusState = loginViewModel.userState.collectAsState()
-    val userSession = loginViewModel.userSession.collectAsState()
 
     Scaffold(
         topBar = { HomeScreenAppBar(

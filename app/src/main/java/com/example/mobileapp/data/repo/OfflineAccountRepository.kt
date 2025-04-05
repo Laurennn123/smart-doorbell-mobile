@@ -13,6 +13,8 @@ class OfflineAccountRepository(private val signUpDao: SignUpDao): AccountReposit
     override fun getContactNumber(email: String): Flow<String> = signUpDao.getContactNumber(email)
     override fun getBirthdate(email: String): Flow<String> = signUpDao.getBirthDate(email)
     override fun getProfilePic(email: String): Flow<String> = signUpDao.getProfilePic(email)
+    override fun getPassword(email: String): Flow<String> = signUpDao.getPassword(email)
+    override suspend fun updatePassword(newPassword: String, email: String) = signUpDao.updatePassword(newPassword, email)
     override suspend fun updateProfilePic(uri: String, email: String) = signUpDao.updateProfilePic(uri, email)
     override suspend fun updateAddress(address: String, email: String) = signUpDao.updateAddress(address, email)
     override suspend fun updateBirthDate(dateBirth: String, email: String) = signUpDao.updateBirthDate(dateBirth, email)

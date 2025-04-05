@@ -53,13 +53,11 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
     var isLogInClicked by mutableStateOf(false)
         private set
 
-    fun userStatusLogIn(
+    suspend fun userStatusLogIn(
         isUserLogIn: Boolean,
         userEmail: String
     ) {
-        viewModelScope.launch {
-            userStatusRepository.saveUserLoggedIn(isUserLoggedIn = isUserLogIn, userEmail = userEmail)
-        }
+        userStatusRepository.saveUserLoggedIn(isUserLoggedIn = isUserLogIn, userEmail = userEmail)
     }
 
     fun clearEmailField(loginDetails: LoginUiDetails) {
@@ -88,14 +86,16 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
     }
 
     @OptIn(UnstableApi::class)
-    suspend fun sendPasswordResetEmail() {
-        val TAG = "database"
-        Firebase.auth.sendPasswordResetEmail(_loginUiState.value.loginDetails.email).
-            addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Email sent.")
-                }
-        }.await()
+    fun sendPasswordResetEmail(email: String): String {
+        val tag = "forgot"
+        var message = ""
+        try {
+            Firebase.auth.sendPasswordResetEmail(email)
+        } catch(e: Exception) {
+            Log.d(tag, e.message.toString())
+            message = e.message.toString()
+        }
+        return message
     }
 
     fun updateUi(loginDetails: LoginUiDetails) {

@@ -36,6 +36,12 @@ interface SignUpDao {
     @Query("SELECT profilePic FROM Account WHERE email = :email")
     fun getProfilePic(email: String): Flow<String>
 
+    @Query("SELECT password FROM Account WHERE email = :email")
+    fun getPassword(email: String): Flow<String>
+
+    @Query("UPDATE Account SET password = :newPassword WHERE email = :email")
+    suspend fun updatePassword(newPassword: String, email: String)
+
     @Query("UPDATE Account SET profilePic = :uri WHERE email = :email")
     suspend fun updateProfilePic(uri: String, email: String)
 

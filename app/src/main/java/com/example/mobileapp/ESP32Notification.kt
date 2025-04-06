@@ -19,7 +19,7 @@ import java.io.IOException
 
 class ESP32Notification : Service()  {
 
-    private val esp32_url = "http://192.168.75.160/"
+    private val esp32_url = "http://192.168.152.160/"
     private val client = OkHttpClient()
     private val handler = Handler(Looper.getMainLooper())
 

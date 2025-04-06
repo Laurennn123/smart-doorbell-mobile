@@ -92,8 +92,6 @@ fun SmartDoorBellNavHost(
     var settingsOptionSelect by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
-
 
     NavHost(
         navController = navController,
@@ -196,10 +194,10 @@ fun SmartDoorBellNavHost(
             val tag = "database"
             SignUpScreen(
                 navigateBack = {
-                    if (it == "") {
-                        errorSignUpMessage = "Success Sign Up"
+                    errorSignUpMessage = if (it == "") {
+                        "Success Sign Up"
                     } else {
-                        errorSignUpMessage = it
+                        it
                     }
                 },
                 navigateToLogIn = { navController.navigateUp() },
@@ -298,7 +296,7 @@ fun SmartDoorBellNavHost(
                 email = userSession.value.userEmail,
                 address = address,
                 contactNumber = contactNumber,
-                birthDate = birthDate,  // birthDate,
+                birthDate = birthDate,
                 editClick = { myAccountViewModel.updateClicked(buttonClick = "Username")  },
                 addressClick = { myAccountViewModel.updateClicked(buttonClick = "Address") },
                 contactClick = { myAccountViewModel.updateClicked(buttonClick = "Contact Number") },
@@ -314,7 +312,6 @@ fun SmartDoorBellNavHost(
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             )
             if (myAccountViewModel.userButtonDetailClicked) {
-                // Do the update query in here and get it 
                 val buttonClicked = myAccountViewModel.buttonClicked
                 if (buttonClicked == "Birth Date") {
                     val newBirthDate = BirthDatePicker(onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "") } )
@@ -396,8 +393,8 @@ fun SmartDoorBellNavHost(
                                     user?.updatePassword(newPassword)
                                         ?.addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
-                                            val TAG = "password"
-                                            Log.d(TAG, "User password updated.")
+                                            val tag = "password"
+                                            Log.d(tag, "User password updated.")
                                         }
                                     }?.await()
                                 } catch (e: Exception) {

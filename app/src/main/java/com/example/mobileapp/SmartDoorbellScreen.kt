@@ -286,8 +286,6 @@ fun SmartDoorbellApp(
                 }
 
                 composable(route = SmartDoorbellScreen.Home.name) {
-                    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-                    var bluetoothSocket: BluetoothSocket? = null
 
 //                    HomeScreen(
 //                        onClick = {

@@ -44,9 +44,6 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createNotificationChannel()
-        val esp32Service = Intent(applicationContext, ESP32Notification::class.java)
-        startService(esp32Service)
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(
                 this, CAMERAX_NOTIFICATION_PERMISSIONS, 0
@@ -79,19 +76,6 @@ class MainActivity : ComponentActivity() {
                 it
             ) == PackageManager.PERMISSION_GRANTED
         }
-    }
-
-    private fun createNotificationChannel() {
-        val name = getString(R.string.name_channel)
-        val descriptionText = getString(R.string.description_channel)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val frontDoorId = "front_door_channel"
-        val channel = NotificationChannel(frontDoorId, name, importance).apply {
-            description = descriptionText
-        }
-        val notificationManager: NotificationManager =
-            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
     }
 
     companion object  {

@@ -441,7 +441,7 @@ fun BackAndUserAppBar(
             )
         },
         actions = {
-            if (currentDestination == "About Us") {
+            if (currentDestination == "About Us" || currentDestination == "Instructional Manual") {
                 IconAppBar(
                     icon = Icons.Filled.AccountCircle,
                     onClick = onClickAccount,

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.IntegrationInstructions
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import com.example.mobileapp.R
@@ -16,6 +17,7 @@ object DataSource {
 //        Settings(R.string.face_enrollment, Icons.Filled.Face),
 //        Settings(R.string.entries_history, Icons.Filled.Lock),
         Settings(R.string.about_us, Icons.Filled.Info),
+        Settings(R.string.instructional_manual, Icons.Filled.IntegrationInstructions),
         Settings(R.string.logout, Icons.Filled.Close),
     )
 }

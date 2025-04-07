@@ -64,7 +64,7 @@ class HomeScreenModel(private val accountRepository: AccountRepository) : ViewMo
     fun sendMessageToESP32(message: String ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val socket = Socket("192.168.152.160", 80)
+                val socket = Socket("192.168.49.132", 81)
                 val writer = socket.getOutputStream().bufferedWriter()
                 writer.write(message + "\n")
                 writer.flush()

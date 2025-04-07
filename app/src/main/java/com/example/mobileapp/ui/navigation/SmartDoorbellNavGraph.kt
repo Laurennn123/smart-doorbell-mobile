@@ -2,6 +2,7 @@ package com.example.mobileapp.ui.navigation
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.mobileapp.ESP32Notification
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.HomeScreen
@@ -59,6 +61,8 @@ import com.example.mobileapp.ui.account.MyAccountScreenDestination
 import com.example.mobileapp.ui.account.MyAccountViewModel
 import com.example.mobileapp.ui.forget_password.ForgetPasswordDestination
 import com.example.mobileapp.ui.forget_password.ForgetPasswordScreen
+import com.example.mobileapp.ui.instructional_manual.InstructionalDestination
+import com.example.mobileapp.ui.instructional_manual.InstructionalManualScreen
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
@@ -194,10 +198,10 @@ fun SmartDoorBellNavHost(
             val tag = "database"
             SignUpScreen(
                 navigateBack = {
-                    errorSignUpMessage = if (it == "") {
-                        "Success Sign Up"
+                    if (it == "") {
+                        errorSignUpMessage = "Success Sign Up"
                     } else {
-                        it
+                        errorSignUpMessage = it
                     }
                 },
                 navigateToLogIn = { navController.navigateUp() },
@@ -231,6 +235,10 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = HomeScreenDestination.route) {
+            Intent(context, ESP32Notification::class.java).also {
+                it.action = ESP32Notification.Actions.START.toString()
+                context.startForegroundService(it)
+            }
             homeViewModel.setFullName(email = auth.currentUser?.email.toString())
             HomeScreen(
                 fullName = fullName,
@@ -260,6 +268,9 @@ fun SmartDoorBellNavHost(
             } else if(settingsOptionSelect == "My Account") {
                 settingsOptionSelect = ""
                 navController.navigate(route = MyAccountScreenDestination.route)
+            } else if (settingsOptionSelect == "Instructional Manual") {
+                settingsOptionSelect = ""
+                navController.navigate(route = InstructionalDestination.route)
             } else if(settingsOptionSelect == "Log Out") {
                 LogOutDialog(
                     onClickNo = { settingsOptionSelect = "" },
@@ -269,12 +280,26 @@ fun SmartDoorBellNavHost(
                         CoroutineScope(Dispatchers.IO).launch {
                             loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
                         }
+                        Intent(context, ESP32Notification::class.java).also {
+                            it.action = ESP32Notification.Actions.STOP.toString()
+                            context.startForegroundService(it)
+                        }
                         navController.navigate(route = LoginDestination.route) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                 )
             }
+        }
+
+        composable(route = InstructionalDestination.route) {
+            InstructionalManualScreen(
+                navigateUp = { navController.navigateUp() },
+                onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route)},
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 16.dp)
+            )
         }
 
         composable(route = AboutUsScreenDestination.route)  {

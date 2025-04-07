@@ -1,5 +1,6 @@
 package com.example.mobileapp
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -19,20 +20,32 @@ import java.io.IOException
 
 class ESP32Notification : Service()  {
 
-    private val esp32_url = "http://192.168.152.160/"
+    private val esp32_url = "http://192.168.49.132/"
     private val client = OkHttpClient()
     private val handler = Handler(Looper.getMainLooper())
 
+    @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(
         intent: Intent?,
         flags: Int,
         startId: Int
     ): Int {
+        when(intent?.action) {
+            Actions.START.toString() -> checkButtonStatus()
+            Actions.STOP.toString() -> stopSelf()
+        }
         checkButtonStatus()
         return super.onStartCommand(intent, flags, startId)
     }
 
+    @SuppressLint("ForegroundServiceType")
     private fun checkButtonStatus() {
+        val notification = NotificationCompat.Builder(this, "front_door_channel")
+            .setContentTitle("Foreground Service")
+            .setContentText("Running...")
+            .setSmallIcon(R.drawable.smart)
+            .build()
+        startForeground(1, notification)
         handler.postDelayed({
             val tag = "esp32"
             val request = Request.Builder().url(esp32_url).build()
@@ -70,7 +83,11 @@ class ESP32Notification : Service()  {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .build()
-        notificationManager.notify(1, messageAboutFrontDoor)
+        notificationManager.notify(2, messageAboutFrontDoor)
+    }
+
+    enum class Actions {
+        START, STOP
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

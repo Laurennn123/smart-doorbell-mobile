@@ -1,5 +1,6 @@
 package com.example.mobileapp.model
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,6 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobileapp.data.HomeUiState
 import com.example.mobileapp.data.repo.AccountRepository
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -62,18 +68,35 @@ class HomeScreenModel(private val accountRepository: AccountRepository) : ViewMo
     }
 
     fun sendMessageToESP32(message: String ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val socket = Socket("192.168.49.132", 81)
-                val writer = socket.getOutputStream().bufferedWriter()
-                writer.write(message + "\n")
-                writer.flush()
-                writer.close()
-                socket.close()
-            } catch (e: Exception) {
-                e.printStackTrace()
+        val ipRef = FirebaseDatabase.getInstance().getReference("ipAddress").child("IP")
+
+        ipRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val ipValue = snapshot.child("updatedIp").getValue(String::class.java)
+
+                Log.d("databasedb", ipValue.toString())
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val socket = Socket(ipValue, 80)
+                        val writer = socket.getOutputStream().bufferedWriter()
+                        writer.write(message + "\n")
+                        writer.flush()
+                        writer.close()
+                        socket.close()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("databasedb", "Error fetching IP: ${error.message}")
+            }
+        })
+
+
     }
 
 }

@@ -43,6 +43,9 @@ import com.example.mobileapp.ui.theme.MobileAppTheme
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
+        createNotificationChannel()
+        val serviceIntent = Intent(applicationContext, ESP32Notification::class.java)
+        startForegroundService(serviceIntent)
         super.onCreate(savedInstanceState)
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(
@@ -76,6 +79,19 @@ class MainActivity : ComponentActivity() {
                 it
             ) == PackageManager.PERMISSION_GRANTED
         }
+    }
+
+    private fun createNotificationChannel() {
+        val name = getString(R.string.name_channel)
+        val descriptionText = getString(R.string.description_channel)
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val frontDoorId = "front_door_channel"
+        val channel = NotificationChannel(frontDoorId, name, importance).apply {
+            description = descriptionText
+        }
+        val notificationManager: NotificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     companion object  {

@@ -23,19 +23,6 @@ class SmartDoorbellApplication : Application() {
         super.onCreate()
         container = AppDataContainer(this)
         userStatusRepository = UserStatusRepository(dataStore)
-        createNotificationChannel()
     }
 
-    private fun createNotificationChannel() {
-        val name = getString(R.string.name_channel)
-        val descriptionText = getString(R.string.description_channel)
-        val importance = NotificationManager.IMPORTANCE_HIGH
-        val frontDoorId = "front_door_channel"
-        val channel = NotificationChannel(frontDoorId, name, importance).apply {
-            description = descriptionText
-        }
-        val notificationManager: NotificationManager =
-            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-    }
 }

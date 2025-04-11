@@ -77,6 +77,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     // Datastore
     implementation(libs.androidx.datastore.preferences)
+    // Database
+    implementation(libs.firebase.core)
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

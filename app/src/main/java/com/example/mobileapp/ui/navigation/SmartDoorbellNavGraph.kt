@@ -235,10 +235,6 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = HomeScreenDestination.route) {
-            Intent(context, ESP32Notification::class.java).also {
-                it.action = ESP32Notification.Actions.START.toString()
-                context.startForegroundService(it)
-            }
             homeViewModel.setFullName(email = auth.currentUser?.email.toString())
             HomeScreen(
                 fullName = fullName,
@@ -279,10 +275,6 @@ fun SmartDoorBellNavHost(
                         auth.signOut()
                         CoroutineScope(Dispatchers.IO).launch {
                             loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
-                        }
-                        Intent(context, ESP32Notification::class.java).also {
-                            it.action = ESP32Notification.Actions.STOP.toString()
-                            context.startForegroundService(it)
                         }
                         navController.navigate(route = LoginDestination.route) {
                             popUpTo(0) { inclusive = true }

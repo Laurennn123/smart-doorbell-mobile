@@ -1,17 +1,10 @@
-package com.example.mobileapp.ui.about_us
+package com.example.mobileapp.ui.access_logs_screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddHome
-import androidx.compose.material.icons.filled.Camera
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,33 +14,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import com.example.mobileapp.BackAndUserAppBar
+import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.components.BottomNavigationBar
-import com.example.mobileapp.ui.components.DefaultIcon
 import com.example.mobileapp.ui.navigation.NavigationDestination
 
-object AboutUsScreenDestination: NavigationDestination {
-    override val route = "About us"
+object AccessLogsDestination : NavigationDestination {
+    override val route = "Access Logs"
 }
 
 @Composable
-fun AboutUsScreen(
-    modifier: Modifier,
-    navigateUp: () -> Unit,
+fun AccessLogsScreen(
     onClickBottomBar: (String) -> Unit,
     currentScreen: String,
-    onClickAccount: () -> Unit
+    modifier: Modifier = Modifier
 ) {
 
     Scaffold(
-        topBar = { BackAndUserAppBar(
-            navigateUp = navigateUp,
-            currentDestination = "About Us",
-            onClickAccount = onClickAccount
-        ) },
         bottomBar = {
             BottomNavigationBar(
                 onClick = { onClickBottomBar(it) },
@@ -72,22 +55,13 @@ fun AboutUsScreen(
                 modifier = modifier
             ) {
                 Text(
-                    text = stringResource(id = R.string.about_us),
+                    text = stringResource(id = R.string.access_logs),
                     style = MaterialTheme.typography.displayLarge,
-                    modifier = Modifier.align(alignment = Alignment.Start)
                 )
-                Spacer(modifier = Modifier.height(100.dp))
-                DefaultIcon(
-                    icon = Icons.Default.Home,
-                    nameOfIcon = "Our Logo",
-                    modifier = Modifier.size(100.dp)
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = stringResource(id = R.string.about_us_description),
-                    textAlign = TextAlign.Center
-                )
+
             }
+
         }
     }
+
 }

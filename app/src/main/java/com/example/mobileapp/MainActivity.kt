@@ -44,8 +44,8 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         createNotificationChannel()
-        val serviceIntent = Intent(applicationContext, ESP32Notification::class.java)
-        startForegroundService(serviceIntent)
+//        val serviceIntent = Intent(applicationContext, ESP32Notification::class.java)
+//        startForegroundService(serviceIntent)
         super.onCreate(savedInstanceState)
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(

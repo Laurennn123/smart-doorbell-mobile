@@ -48,6 +48,7 @@ class ESP32Notification : Service()  {
             ) {
                 val nameOfEnteringFacility = parentSnapShot.key.toString()
                 var initialChildCount = parentSnapShot.childrenCount
+                showNotification(name = nameOfEnteringFacility)
 
                 parentSnapShot.ref.addChildEventListener(object : ChildEventListener {
                     var childCount = initialChildCount

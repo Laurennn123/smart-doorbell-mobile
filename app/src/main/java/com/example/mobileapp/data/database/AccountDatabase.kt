@@ -6,12 +6,15 @@ import androidx.room.Room
 import com.example.mobileapp.data.dao.SignUpDao
 import com.example.mobileapp.data.table.Account
 import android.content.Context
+import com.example.mobileapp.data.dao.AccessLogDao
+import com.example.mobileapp.data.table.AccessLogs
 
 
-@Database(entities = [Account::class], version = 1, exportSchema = false)
+@Database(entities = [Account::class, AccessLogs::class], version = 1, exportSchema = false)
 abstract class AccountDatabase : RoomDatabase() {
 
     abstract fun signUpDao(): SignUpDao
+    abstract fun accessLogDao(): AccessLogDao
 
     companion object {
         @Volatile

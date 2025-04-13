@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,6 +55,8 @@ import com.example.mobileapp.ui.SplashScreen
 import com.example.mobileapp.ui.SplashScreenDestination
 import com.example.mobileapp.ui.about_us.AboutUsScreen
 import com.example.mobileapp.ui.about_us.AboutUsScreenDestination
+import com.example.mobileapp.ui.access_logs_screen.AccessLogsDestination
+import com.example.mobileapp.ui.access_logs_screen.AccessLogsScreen
 import com.example.mobileapp.ui.account.BirthDatePicker
 import com.example.mobileapp.ui.account.InputDialog
 import com.example.mobileapp.ui.account.MyAccountScreen
@@ -96,6 +99,7 @@ fun SmartDoorBellNavHost(
     var settingsOptionSelect by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+    var currentScreen by rememberSaveable { mutableStateOf("HomeScreen") }
 
     NavHost(
         navController = navController,
@@ -240,12 +244,45 @@ fun SmartDoorBellNavHost(
                 fullName = fullName,
                 context = context,
                 onClickSettings = { navController.navigate(route = SettingScreenDestination.route) },
-                onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) } ,
+                onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) },
+                onClickBottomBar = {
+                    currentScreen = if (it == "Access Logs")  {
+                        ""
+                    } else {
+                        "HomeScreen"
+                    }
+                    if (it == "Access Logs") {
+                        navController.navigate(route = AccessLogsDestination.route)
+                    } else {
+                        navController.navigate(route = HomeScreenDestination.route)
+                    }
+                },
+                currentScreen = currentScreen,
                 modifier =  Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
                     .verticalScroll(scrollState)
                     .imePadding(),
+            )
+        }
+
+        composable(route = AccessLogsDestination.route) {
+            AccessLogsScreen(
+                onClickBottomBar = {
+                    currentScreen = if (it == "Access Logs")  {
+                        ""
+                    } else {
+                        "HomeScreen"
+                    }
+                    if (it == "Access Logs") {
+                        navController.navigate(route = AccessLogsDestination.route)
+                    } else {
+                        navController.navigate(route = HomeScreenDestination.route)
+                    }
+                },
+                currentScreen = currentScreen,
+                modifier = Modifier
+                    .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             )
         }
 
@@ -255,6 +292,19 @@ fun SmartDoorBellNavHost(
                 onClick = { settingsOptionSelect = it },
                 navigateUp = { navController.navigateUp() },
                 currentDestination = navController.currentDestination?.route.toString(),
+                onClickBottomBar = {
+                    currentScreen = if (it == "Access Logs")  {
+                        ""
+                    } else {
+                        "HomeScreen"
+                    }
+                    if (it == "Access Logs") {
+                        navController.navigate(route = AccessLogsDestination.route)
+                    } else {
+                        navController.navigate(route = HomeScreenDestination.route)
+                    }
+                },
+                currentScreen = currentScreen,
                 modifier = Modifier
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             )
@@ -298,6 +348,19 @@ fun SmartDoorBellNavHost(
             AboutUsScreen(
                 navigateUp = { navController.navigateUp() },
                 onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) },
+                onClickBottomBar = {
+                    currentScreen = if (it == "Access Logs")  {
+                        ""
+                    } else {
+                        "HomeScreen"
+                    }
+                    if (it == "Access Logs") {
+                        navController.navigate(route = AccessLogsDestination.route)
+                    } else {
+                        navController.navigate(route = HomeScreenDestination.route)
+                    }
+                },
+                currentScreen = currentScreen,
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxSize()
@@ -324,6 +387,19 @@ fun SmartDoorBellNavHost(
                 updatePic = {
                     myAccountViewModel.updateProfilePic(uri = it, email = userSession.value.userEmail)
                 },
+                onClickBottomBar = {
+                    currentScreen = if (it == "Access Logs")  {
+                        ""
+                    } else {
+                        "HomeScreen"
+                    }
+                    if (it == "Access Logs") {
+                        navController.navigate(route = AccessLogsDestination.route)
+                    } else {
+                        navController.navigate(route = HomeScreenDestination.route)
+                    }
+                },
+                currentScreen = currentScreen,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))

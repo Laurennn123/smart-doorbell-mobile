@@ -32,6 +32,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.mobileapp.BackAndUserAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.model.Settings
+import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
 
@@ -46,6 +47,8 @@ fun SettingsScreen(
     onClick: (String) -> Unit,
     navigateUp: () -> Unit,
     currentDestination: String,
+    onClickBottomBar: (String) -> Unit,
+    currentScreen: String,
     modifier: Modifier = Modifier) {
 
     Scaffold(
@@ -53,7 +56,13 @@ fun SettingsScreen(
             navigateUp = navigateUp,
             currentDestination = currentDestination,
             onClickAccount = {}
-        ) }
+        ) },
+        bottomBar = {
+            BottomNavigationBar(
+                onClick = { onClickBottomBar(it) },
+                currentScreen = currentScreen
+            )
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

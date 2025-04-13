@@ -49,6 +49,7 @@ import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
+import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.navigation.NavigationDestination
@@ -60,13 +61,13 @@ object HomeScreenDestination : NavigationDestination {
 
 @Composable
 fun HomeScreen(
-//    onClick: () -> Unit,
     context: Context,
     fullName: String,
     onClickSettings: () -> Unit,
     onClickAccount: () -> Unit,
     homeViewModel: HomeScreenModel = viewModel(factory = AppViewModelProvider.Factory),
-    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onClickBottomBar: (String) -> Unit,
+    currentScreen: String,
     modifier: Modifier = Modifier) {
 
     var userMessage by rememberSaveable { mutableStateOf("") }
@@ -75,8 +76,14 @@ fun HomeScreen(
         topBar = { HomeScreenAppBar(
             onClickAccount = onClickAccount,
             onClickSettings = onClickSettings,
-            nameOwner = fullName
-        ) }
+            nameOwner = fullName)
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                onClick = { onClickBottomBar(it) },
+                currentScreen = currentScreen
+            )
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -236,14 +243,14 @@ private fun MessagePanel(
         modifier = modifier
     ) {
         Text(
-            text = stringResource(id = R.string.message_panel),
+            text = stringResource(id = R.string.register),
             style = MaterialTheme.typography.displayMedium,
             modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
         )
         TextField(
             value = messageValue,
             onValueChange = userMessage,
-            label = { Text(stringResource(id = R.string.enter_message)) },
+            label = { Text(stringResource(id = R.string.enter_name)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)

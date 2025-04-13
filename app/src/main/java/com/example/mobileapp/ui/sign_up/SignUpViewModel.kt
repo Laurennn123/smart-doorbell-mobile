@@ -191,7 +191,6 @@ data class SignUpUiState (
 )
 
 data class SignUpDetails(
-    val id: Int = 0,
     val fullName: String = "",
     val email: String = "",
     val password: String = "",
@@ -205,7 +204,6 @@ data class SignUpDetails(
 )
 
 fun SignUpDetails.toAccount(): Account = Account(
-    id = id,
     fullName = fullName,
     email = email,
     password = password,

@@ -60,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.BackAndUserAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.AppViewModelProvider
+import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.DefaultIcon
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.ImageContainer
@@ -87,6 +88,8 @@ fun MyAccountScreen(
     contactClick: () -> Unit,
     dateClick: () -> Unit,
     changePassClick: () -> Unit,
+    onClickBottomBar: (String) -> Unit,
+    currentScreen: String,
     navigateUp: () -> Unit,
 ) {
 
@@ -95,7 +98,13 @@ fun MyAccountScreen(
             navigateUp = navigateUp,
             currentDestination = "My Account",
             onClickAccount = {}
-        ) }
+        ) },
+        bottomBar = {
+            BottomNavigationBar(
+                onClick = { onClickBottomBar(it) },
+                currentScreen = currentScreen
+            )
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

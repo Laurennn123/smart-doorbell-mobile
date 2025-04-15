@@ -1,9 +1,10 @@
 package com.example.mobileapp.ui
 
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,21 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationCompat
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.mobileapp.ESP32VideoStream
 import com.example.mobileapp.HomeScreenAppBar
-import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.SimpleButton
-import com.example.mobileapp.ui.login.LoginViewModel
 import com.example.mobileapp.ui.navigation.NavigationDestination
 import com.example.mobileapp.ui.theme.MobileAppTheme
 
@@ -319,6 +313,38 @@ private fun VisitorCard(
             Text(text = stringResource(R.string.authorized))
         }
     }
+}
+
+@SuppressLint("SetJavaScriptEnabled")
+@Composable
+fun ESP32VideoStream() {
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(800.dp),
+        factory = { context ->
+            WebView(context).apply {
+                settings.javaScriptEnabled = true
+                settings.loadWithOverviewMode = true
+                settings.useWideViewPort = true
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                settings.builtInZoomControls = false
+                settings.displayZoomControls = false
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        view?.evaluateJavascript("""
+                            (function() {
+                                document.body.style.height = "800px";  
+                                document.body.style.overflow = "hidden"; 
+                                document.documentElement.style.overflow = "hidden";
+                            })();
+                        """.trimIndent(), null)
+                    }
+                }
+                loadUrl("https://www.google.com/") // INSERT THE URL HERE OF THE ESP 32 CAM
+            }
+        },
+    )
 }
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)

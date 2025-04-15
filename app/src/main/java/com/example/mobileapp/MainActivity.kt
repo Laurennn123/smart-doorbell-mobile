@@ -44,8 +44,8 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         createNotificationChannel()
-//        val serviceIntent = Intent(applicationContext, ESP32Notification::class.java)
-//        startForegroundService(serviceIntent)
+        val serviceIntent = Intent(applicationContext, ESP32Notification::class.java)
+        startForegroundService(serviceIntent)
         super.onCreate(savedInstanceState)
         if (!hasRequiredPermissions()) {
             ActivityCompat.requestPermissions(
@@ -103,34 +103,3 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@SuppressLint("SetJavaScriptEnabled")
-@Composable
-fun ESP32VideoStream() {
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(800.dp),
-        factory = { context ->
-            WebView(context).apply {
-                settings.javaScriptEnabled = true
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-                settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                settings.builtInZoomControls = false
-                settings.displayZoomControls = false
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        view?.evaluateJavascript("""
-                            (function() {
-                                document.body.style.height = "800px";  
-                                document.body.style.overflow = "hidden"; 
-                                document.documentElement.style.overflow = "hidden";
-                            })();
-                        """.trimIndent(), null)
-                    }
-                }
-                loadUrl("https://www.google.com/") // INSERT THE URL HERE OF THE ESP 32 CAM
-            }
-        },
-    )
-}

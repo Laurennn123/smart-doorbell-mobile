@@ -240,6 +240,7 @@ fun SmartDoorBellNavHost(
 
         composable(route = HomeScreenDestination.route) {
             homeViewModel.setFullName(email = auth.currentUser?.email.toString())
+            // create also a service on this that will get the ip address through firebase then pass the ip address
             HomeScreen(
                 fullName = fullName,
                 context = context,

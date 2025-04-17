@@ -2,6 +2,14 @@ package com.example.mobileapp.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.util.Log
+import android.webkit.CookieManager
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -27,8 +35,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,6 +59,11 @@ import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
 import com.example.mobileapp.ui.theme.MobileAppTheme
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 object HomeScreenDestination : NavigationDestination {
     override val route = "HomeScreen"
@@ -103,7 +119,7 @@ fun HomeScreen(
 //                )
                 LiveStream(modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = Color.Gray, shape = MaterialTheme.shapes.medium)
+                    .background(color = Color.Transparent, shape = MaterialTheme.shapes.medium)
                     .height(800.dp))
                 Actions(
                     onClickAlarm = {
@@ -187,13 +203,6 @@ private fun LiveStream(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         ESP32VideoStream()
-
-//        SimpleButton(
-//            onClick = { },
-//            nameOfButton = stringResource(id = R.string.live_view),
-//            shape = MaterialTheme.shapes.extraLarge,
-//            modifier = Modifier
-//        )
     }
 }
 
@@ -318,34 +327,103 @@ private fun VisitorCard(
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ESP32VideoStream() {
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(800.dp),
-        factory = { context ->
-            WebView(context).apply {
-                settings.javaScriptEnabled = true
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-                settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                settings.builtInZoomControls = false
-                settings.displayZoomControls = false
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        view?.evaluateJavascript("""
-                            (function() {
-                                document.body.style.height = "800px";  
-                                document.body.style.overflow = "hidden"; 
-                                document.documentElement.style.overflow = "hidden";
-                            })();
-                        """.trimIndent(), null)
-                    }
+    var cameraIpAddress by remember { mutableStateOf<String?>(null) }
+    var webViewRef by remember { mutableStateOf<WebView?>(null) }
+
+    LaunchedEffect(Unit) {
+        val realtimeDatabase: DatabaseReference = FirebaseDatabase.getInstance().getReference("ipAddressCamera")
+
+        realtimeDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (child in snapshot.children) {
+                    cameraIpAddress = child.child("updatedIp").getValue(String::class.java)
+                    Log.d("camera", cameraIpAddress.toString())
+                    break
                 }
-                loadUrl("https://www.google.com/") // INSERT THE URL HERE OF THE ESP 32 CAM
             }
-        },
-    )
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("camera", "Firebase error: ${error.message}")
+            }
+        })
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            webViewRef?.let {
+                it.loadUrl("about:blank")
+                it.stopLoading()
+                it.clearHistory()
+                it.removeAllViews()
+                it.destroy()
+                webViewRef = null
+                Log.d("WebView", "Destroyed on dispose")
+            }
+        }
+    }
+
+    cameraIpAddress?.let { ipAddress ->
+
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(800.dp),
+            factory = { context ->
+                WebView(context).apply {
+                    settings.javaScriptEnabled = true
+                    settings.loadWithOverviewMode = true
+                    settings.useWideViewPort = true
+                    settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                    settings.builtInZoomControls = false
+                    settings.displayZoomControls = false
+                    settings.userAgentString = "AndroidWebView"
+
+                    settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            super.onPageFinished(view, url)
+                            view?.evaluateJavascript(
+                                """
+                                (function() {
+                                    document.body.style.height = "800px";
+                                    document.body.style.overflow = "hidden";
+                                    document.documentElement.style.overflow = "hidden";
+                                })();
+                                """.trimIndent(), null
+                            )
+                        }
+
+                        override fun onReceivedError(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                            error: WebResourceError?
+                        ) {
+                            super.onReceivedError(view, request, error)
+                            view?.postDelayed({ view.reload() }, 2000)
+                        }
+
+                        override fun onReceivedHttpError(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                            errorResponse: WebResourceResponse?
+                        ) {
+                            super.onReceivedHttpError(view, request, errorResponse)
+                            view?.postDelayed({ view.reload() }, 2000)
+                        }
+                    }
+
+
+                    val headers = mapOf("User-Agent" to "AndroidWebView")
+                    loadUrl("http://$ipAddress/", headers)
+
+                    webViewRef = this
+                }
+            }
+        )
+    }
 }
+
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @Composable

@@ -6,10 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,16 +19,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -62,6 +53,12 @@ class ESP32Notification : Service()  {
             .build()
 
         startForeground(1, notification)
+        listenToFirebaseParent("notifyApp")
+        listenToFirebaseParent("successNotify")
+        listenToFirebaseParent("unauthorizedAttempt")
+        listenToFirebaseParent("doorAttempt")
+        listenToFirebaseParent("notRegisteredRFID")
+        listenToFirebaseParent("guestUnauthorizedBuzzer")
         listenToEnteringUser(referenceName = "registeredNamesCamera")
         listenToEnteringUser(referenceName = "registeredNames")
         return super.onStartCommand(intent, flags, startId)
@@ -100,7 +97,12 @@ class ESP32Notification : Service()  {
                             isEntered = true
                         )
                         CoroutineScope(Dispatchers.IO).launch {
-                            accessLog.insertLog(logsState.toAccessLogs())
+                            val isNameTappedIn = accessLog.isUserTappedIn(nameOfEnteringFacility).firstOrNull()
+                            if (isNameTappedIn == null) {
+                                accessLog.insertLog(logsState.toAccessLogs())
+                            } else {
+                                accessLog.updateLog(logsState.toAccessLogs())
+                            }
                         }
                         showNotification(name = nameOfEnteringFacility)
                     }
@@ -121,20 +123,104 @@ class ESP32Notification : Service()  {
         })
     }
 
-        fun showNotification(name: String) {
-            val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val intent = Intent(this, MainActivity::class.java)
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-            val messageAboutFrontDoor = NotificationCompat.Builder(this, "front_door_channel")
-                .setSmallIcon(R.drawable.face_scan_icon)
-                .setContentTitle("Facility update")
-                .setContentText("$name is entering facility")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build()
-            notificationManager.notify(2, messageAboutFrontDoor)
-        }
+    private fun showNotification(name: String) {
+        val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val messageAboutFrontDoor = NotificationCompat.Builder(this, "front_door_channel")
+            .setSmallIcon(R.drawable.face_scan_icon)
+            .setContentTitle("Facility update")
+            .setContentText("$name is entering facility")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+        notificationManager.notify(2, messageAboutFrontDoor)
+    }
+
+    private fun listenToFirebaseParent(ref: String) {
+        realtimeDatabase = FirebaseDatabase.getInstance().getReference(ref)
+
+        realtimeDatabase.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val initialChildCount = snapshot.childrenCount
+                snapshot.ref.addChildEventListener(object : ChildEventListener {
+                    var childCount = initialChildCount
+
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+
+                        if (childCount > 0) {
+                            childCount--
+                            return
+                        }
+
+                        if (ref == "notifyApp") {
+                            notify(
+                                contentTitle = "Tap in your card! \uD83E\uDEAA",
+                                contentText = "It's ready to register your card"
+                            )
+                        } else if(ref == "successNotify") {
+                            notify(
+                                contentTitle = "Card registered successfully! \uD83E\uDEAA",
+                                contentText = "It's ready to tap in now"
+                            )
+                        } else if (ref == "unauthorizedAttempt") {
+                            notify(
+                                contentTitle = "Someone trying to enter facility ⚠\uFE0F",
+                                contentText = "unauthorized person at front door"
+                            )
+                        } else if (ref == "doorAttempt") {
+                            notify(
+                                contentTitle = "Someone trying to breach the door \uD83D\uDEAA",
+                                contentText = "unauthorized person at front door"
+                            )
+                        } else if (ref == "notRegisteredRFID") {
+                            notify(
+                                contentTitle = "Someone tapped in unregistered card  ⚠\uFE0F",
+                                contentText = "unauthorized person at front door"
+                            )
+                        } else if (ref == "guestUnauthorizedBuzzer") {
+                            notify(
+                                contentTitle = "Someone guest person at front door restricted area",
+                                contentText = "guest person at front door"
+                            )
+                        }
+                    }
+
+                    override fun onChildChanged(
+                        snapshot: DataSnapshot,
+                        previousChildName: String?
+                    ) {}
+                    override fun onChildRemoved(snapshot: DataSnapshot) {}
+                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onCancelled(error: DatabaseError) {}
+                })
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun notify(
+        contentTitle: String,
+        contentText: String
+    ) {
+        val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val messageAboutFrontDoor = NotificationCompat.Builder(this, "front_door_channel")
+            .setSmallIcon(R.drawable.face_scan_icon)
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+        notificationManager.notify(3, messageAboutFrontDoor)
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 }

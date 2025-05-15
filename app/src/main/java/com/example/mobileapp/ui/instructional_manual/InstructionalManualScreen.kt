@@ -60,7 +60,7 @@ fun InstructionalManualScreen(
                 modifier = modifier
             ) {
                 Text(
-                    text = stringResource(R.string.instructional_manual),
+                    text = stringResource(R.string.users_manual),
                     style = MaterialTheme.typography.displayLarge
                 )
                 Text(
@@ -70,7 +70,7 @@ fun InstructionalManualScreen(
                 Spacer(modifier = Modifier.height(130.dp))
                 Image(
                     painter = painterResource(R.drawable.instructional_manual),
-                    contentDescription = stringResource(R.string.instructional_manual),
+                    contentDescription = stringResource(R.string.users_manual),
                     modifier = Modifier
                         .size(230.dp)
                         .clip(RoundedCornerShape(16.dp))

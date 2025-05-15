@@ -51,7 +51,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mobileapp.ESP32Notification
 import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
@@ -79,6 +81,11 @@ fun HomeScreen(
     onClickBottomBar: (String) -> Unit,
     currentScreen: String,
     modifier: Modifier = Modifier) {
+
+    LaunchedEffect(Unit) {
+        val esp32Service = Intent(context, ESP32Notification::class.java)
+        startForegroundService(context, esp32Service)
+    }
 
     var userMessage by rememberSaveable { mutableStateOf("") }
 

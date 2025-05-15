@@ -5,5 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AccessLogsRepository {
     suspend fun insertLog(log: AccessLogs)
+    suspend fun updateLog(log: AccessLogs)
+    fun isUserTappedIn(notifyName: String): Flow<String>
     fun getAllLogs(): Flow<List<AccessLogs>>
 }

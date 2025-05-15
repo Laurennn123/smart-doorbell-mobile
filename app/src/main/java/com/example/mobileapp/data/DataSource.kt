@@ -17,7 +17,7 @@ object DataSource {
 //        Settings(R.string.face_enrollment, Icons.Filled.Face),
 //        Settings(R.string.entries_history, Icons.Filled.Lock),
         Settings(R.string.about_us, Icons.Filled.Info),
-        Settings(R.string.instructional_manual, Icons.Filled.IntegrationInstructions),
+        Settings(R.string.users_manual, Icons.Filled.IntegrationInstructions),
         Settings(R.string.logout, Icons.Filled.Close),
     )
 }

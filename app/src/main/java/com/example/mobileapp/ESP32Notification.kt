@@ -43,6 +43,9 @@ class ESP32Notification : Service()  {
         flags: Int,
         startId: Int
     ): Int {
+        if (intent?.action == "STOP_SERVICE") {
+            stopSelf()
+        }
         val notification = NotificationCompat.Builder(this, "front_door_channel")
             .setContentTitle("Smart Security Running")
             .setContentText("this notification is for users entering room")

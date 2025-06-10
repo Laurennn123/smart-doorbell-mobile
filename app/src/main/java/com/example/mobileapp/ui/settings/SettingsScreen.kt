@@ -1,4 +1,4 @@
-package com.example.mobileapp.ui
+package com.example.mobileapp.ui.settings
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background

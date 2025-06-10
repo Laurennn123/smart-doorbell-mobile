@@ -1,30 +1,23 @@
 package com.example.mobileapp.ui.login
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,17 +34,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobileapp.R
-import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
@@ -60,7 +50,6 @@ import com.example.mobileapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.log
 
 object LoginDestination : NavigationDestination {
     override val route = "Login"
@@ -76,7 +65,6 @@ fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val loginState by loginViewModel.loginUiState.collectAsState()
-    val userSessionState by loginViewModel.userSession.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     Box(
@@ -109,13 +97,13 @@ fun LoginScreen(
             ) {
                 UserInput(
                     displayTyped = loginState.loginDetails.email,
-                    userTyped = { loginViewModel.updateUi(loginState.loginDetails.copy(email = it)) },
+                    userTyped = { loginViewModel.handleChange(loginState.loginDetails.copy(email = it)) },
                     label = stringResource(id = R.string.email),
                     icon = {
                         if (loginState.loginDetails.email.isNotEmpty()) {
                             IconAppBar(
                                 icon = Icons.Default.Close,
-                                onClick = { loginViewModel.clearEmailField(loginState.loginDetails.copy(email = "")) },
+                                onClick = { loginViewModel.clearEmailField() },
                                 contentDescription = stringResource(id = R.string.email)
                             )
                         }
@@ -123,11 +111,11 @@ fun LoginScreen(
                 )
                 UserInput(
                     displayTyped = loginState.loginDetails.password,
-                    userTyped = { loginViewModel.updateUi(loginState.loginDetails.copy(password = it)) },
+                    userTyped = { loginViewModel.handleChange(loginState.loginDetails.copy(password = it)) },
                     label = stringResource(id = R.string.password),
-                    visualTransformation = if(loginViewModel.isIconPassClicked) VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation = if(loginState.isIconPassClicked) VisualTransformation.None else PasswordVisualTransformation(),
                     icon = {
-                        if(loginViewModel.isIconPassClicked) {
+                        if(loginState.isIconPassClicked) {
                             IconAppBar(
                                 icon = Icons.Default.Visibility,
                                 onClick = { loginViewModel.showPassword() },
@@ -140,7 +128,6 @@ fun LoginScreen(
                                 contentDescription = stringResource(id = R.string.password)
                             )
                         }
-
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                 )
@@ -166,11 +153,11 @@ fun LoginScreen(
                     onClick = {
                         loginViewModel.logInClicked()
                         coroutineScope.launch {
-                            val isRegistered = loginViewModel.isEmailPassRegistered(loginState.loginDetails)
+                            val isRegistered = loginViewModel.isEmailPassRegistered()
 
                             if (isRegistered) {
                                 loginViewModel.userStatusLogIn(
-                                    isUserLogIn = !userSessionState.isUserLoggedIn,
+                                    isUserLogIn = true,
                                     userEmail = loginState.loginDetails.email
                                 )
                                 withContext(Dispatchers.Main) {
@@ -192,21 +179,21 @@ fun LoginScreen(
                         .height(40.dp)
                         .width(110.dp)
                 ) {
-                        if (loginViewModel.isLogInClicked) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.width(24.dp),
-                                color = MaterialTheme.colorScheme.secondary,
-                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = stringResource(id = R.string.login),
-                                fontSize = 14.sp,
-                                fontFamily = FontFamily.Default,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                    if (loginState.isLogInClicked) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(24.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.login),
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily.Default,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(120.dp))

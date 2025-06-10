@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -38,10 +39,10 @@ import androidx.navigation.compose.composable
 import com.example.mobileapp.ESP32Notification
 import com.example.mobileapp.R
 import com.example.mobileapp.ui.AppViewModelProvider
-import com.example.mobileapp.ui.HomeScreen
-import com.example.mobileapp.ui.HomeScreenDestination
-import com.example.mobileapp.ui.SettingScreenDestination
-import com.example.mobileapp.ui.SettingsScreen
+import com.example.mobileapp.ui.home.HomeScreen
+import com.example.mobileapp.ui.home.HomeScreenDestination
+import com.example.mobileapp.ui.settings.SettingScreenDestination
+import com.example.mobileapp.ui.settings.SettingsScreen
 import com.example.mobileapp.ui.login.LoginDestination
 import com.example.mobileapp.ui.login.LoginScreen
 import com.example.mobileapp.ui.login.LoginViewModel
@@ -97,7 +98,6 @@ fun SmartDoorBellNavHost(
 
     var email by remember { mutableStateOf("") }
     var settingsOptionSelect by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     var currentScreen by rememberSaveable { mutableStateOf("HomeScreen") }
 
@@ -131,6 +131,8 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = LoginDestination.route) {
+            var errorMessage by remember { mutableStateOf("") }
+
             LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -294,14 +296,11 @@ fun SmartDoorBellNavHost(
                 navigateUp = { navController.navigateUp() },
                 currentDestination = navController.currentDestination?.route.toString(),
                 onClickBottomBar = {
-                    currentScreen = if (it == "Access Logs")  {
-                        ""
-                    } else {
-                        "HomeScreen"
-                    }
                     if (it == "Access Logs") {
+                        currentScreen = ""
                         navController.navigate(route = AccessLogsDestination.route)
                     } else {
+                        currentScreen = "HomeScreen"
                         navController.navigate(route = HomeScreenDestination.route)
                     }
                 },
@@ -326,6 +325,9 @@ fun SmartDoorBellNavHost(
                         auth.signOut()
                         CoroutineScope(Dispatchers.IO).launch {
                             loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
+                            val stopIntent = Intent(context, ESP32Notification::class.java)
+                            stopIntent.action = "STOP_SERVICE"
+                            context.startService(stopIntent);
                         }
                         navController.navigate(route = LoginDestination.route) {
                             popUpTo(0) { inclusive = true }
@@ -451,7 +453,7 @@ fun SmartDoorBellNavHost(
                     )
                 } else if (buttonClicked == "Username") {
                     InputDialog(
-                        typeOfInput = stringResource(R.string.enter_message),
+                        typeOfInput = stringResource(R.string.enter_username),
                         nameOfInput = stringResource(R.string.username),
                         onDismissRequest = { myAccountViewModel.updateClicked(buttonClick = "")  },
                         valueInputted = myAccountViewModel.myAccountUiState.userName,

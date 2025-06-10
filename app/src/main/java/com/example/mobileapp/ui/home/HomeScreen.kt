@@ -1,12 +1,9 @@
-package com.example.mobileapp.ui
+package com.example.mobileapp.ui.home
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.util.Log
-import android.webkit.CookieManager
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -49,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat.startForegroundService
@@ -57,6 +55,7 @@ import com.example.mobileapp.ESP32Notification
 import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.R
 import com.example.mobileapp.model.HomeScreenModel
+import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
@@ -432,7 +431,7 @@ fun ESP32VideoStream() {
 }
 
 
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Preview(showBackground = true)
 @Composable
 fun Test2() {
     MobileAppTheme {

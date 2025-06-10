@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -29,10 +27,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,13 +55,8 @@ import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 object SignUpDestination : NavigationDestination {
     override val route = "SignUp"
@@ -75,6 +69,7 @@ fun SignUpScreen(
     navigateToLogIn: () -> Unit,
     signUpViewModel: SignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
 
+    val signUpUiState by signUpViewModel.signUpUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     Box(
@@ -108,30 +103,32 @@ fun SignUpScreen(
             ) {
                 IdentityForm(
                     signUpViewModel = signUpViewModel,
-                    onValueChange = signUpViewModel::updateUiState
+                    signUpDetails = signUpUiState.signUpDetails,
+                    isDatePickerClicked = signUpUiState.isDatePickerClicked,
+                    isGenderPickerClicked = signUpUiState.isGenderPickerClicked
                 )
                 Spacer(modifier = Modifier.height(40.dp))
                 Button(
                     onClick = {
-                        signUpViewModel.signUpClick()
+                        signUpViewModel.signUpClicked()
 
                         coroutineScope.launch {
-                            if (signUpViewModel.signUpUiState.signUpDetails.password != signUpViewModel.signUpUiState.signUpDetails.reEnterPassword) {
+                            if (signUpUiState.signUpDetails.password != signUpUiState.signUpDetails.reEnterPassword) {
                                 signUpViewModel.updateErrorMessage("Not equal password")
                             } else {
                                 signUpViewModel.updateErrorMessage("")
-                                signUpViewModel.addAccountCloud()
+                                signUpViewModel.addAccountInAuthentication()
                             }
                             if (signUpViewModel.errorMessage.isBlank()) {
-                                signUpViewModel.addAccountCloudInformation()
-                                signUpViewModel.addLocalAccount()
+                                signUpViewModel.addAccountInFireStore()
+                                signUpViewModel.addAccountForLocalDB()
                                 withContext(Dispatchers.Main) {
-                                    signUpViewModel.signUpClick()
+                                    signUpViewModel.signUpClicked()
                                     navigateBack("")
                                 }
                             } else {
                                 withContext(Dispatchers.Main) {
-                                    signUpViewModel.signUpClick()
+                                    signUpViewModel.signUpClicked()
                                     navigateBack(signUpViewModel.errorMessage)
                                 }
                             }
@@ -141,9 +138,9 @@ fun SignUpScreen(
                     modifier = Modifier
                         .height(40.dp)
                         .width(110.dp),
-                    enabled = signUpViewModel.signUpUiState.isEntryValid
+                    enabled = signUpUiState.isEntryValid
                 ) {
-                    if (signUpViewModel.isSignUpClicked) {
+                    if (signUpUiState.isSignUpClicked) {
                         CircularProgressIndicator(
                             modifier = Modifier.width(24.dp),
                             color = MaterialTheme.colorScheme.secondary,
@@ -178,11 +175,14 @@ fun SignUpScreen(
 @Composable
 private fun IdentityForm(
     signUpViewModel: SignUpViewModel,
-    onValueChange: (SignUpDetails) -> Unit = {}) {
+    signUpDetails: SignUpDetails,
+    isDatePickerClicked: Boolean,
+    isGenderPickerClicked: Boolean
+) {
     IdentityTextField(
         label = stringResource(R.string.full_name),
-        displayTyped = signUpViewModel.signUpUiState.signUpDetails.fullName,
-        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(fullName = it)) },
+        displayTyped = signUpDetails.fullName,
+        userTyped = { signUpViewModel.handleChange(signUpDetails.copy(fullName = it)) },
         visualTransformation = VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -191,8 +191,8 @@ private fun IdentityForm(
     )
     IdentityTextField(
         label = stringResource(R.string.email),
-        displayTyped = signUpViewModel.signUpUiState.signUpDetails.email,
-        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(email = it)) },
+        displayTyped = signUpDetails.email,
+        userTyped = { signUpViewModel.handleChange(signUpDetails.copy(email = it)) },
         visualTransformation = VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -201,8 +201,8 @@ private fun IdentityForm(
     )
     IdentityTextField(
         label = stringResource(R.string.password),
-        displayTyped = signUpViewModel.signUpUiState.signUpDetails.password,
-        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(password = it)) },
+        displayTyped = signUpDetails.password,
+        userTyped = { signUpViewModel.handleChange(signUpDetails.copy(password = it)) },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
@@ -211,8 +211,8 @@ private fun IdentityForm(
     )
     IdentityTextField(
         label = stringResource(R.string.re_enter_password),
-        displayTyped = signUpViewModel.signUpUiState.signUpDetails.reEnterPassword,
-        userTyped = { onValueChange(signUpViewModel.signUpUiState.signUpDetails.copy(reEnterPassword = it)) },
+        displayTyped = signUpDetails.reEnterPassword,
+        userTyped = { signUpViewModel.handleChange(signUpDetails.copy(reEnterPassword = it)) },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
@@ -227,21 +227,22 @@ private fun IdentityForm(
             .padding(horizontal = dimensionResource(R.dimen.padding_medium))
     ) {
         DatePickerDocked(
-            showDatePicker = signUpViewModel.showDatePicker,
+            showDatePicker = isDatePickerClicked,
             onDismissRequest = {
-                signUpViewModel.updateDate(it)
-                signUpViewModel.onDismissCalendar()
+//                signUpViewModel.updateDate(it)
+//                signUpViewModel.onDismissCalendar()
+                signUpViewModel.openCalendar(signUpDetails.copy(dateOfBirth = it))
             },
             datePicker = signUpViewModel::selectedDate,
-            onClick = { signUpViewModel.clickedCalendarIcon() }
+            onClick = { signUpViewModel.openCalendar(signUpDetails) }
         )
         GenderPicker(
-            gender = signUpViewModel.gender,
-            showMenuPicker = signUpViewModel.showMenuPicker,
-            iconOnClick = { signUpViewModel.clickedArrowDownIcon() },
-            onDismissRequest = { signUpViewModel.onDismissGenderPicker() },
-            onMaleClick = { signUpViewModel.updateGender("Male") },
-            onFemaleClick = { signUpViewModel.updateGender("Female") }
+            gender = signUpDetails.gender,
+            showMenuPicker = isGenderPickerClicked,
+            iconOnClick = { signUpViewModel.openGenderPicker(signUpDetails) },
+            onDismissRequest = { signUpViewModel.openGenderPicker(signUpDetails) },
+            onMaleClick = { signUpViewModel.openGenderPicker(signUpDetails.copy(gender = "Male")) },
+            onFemaleClick = { signUpViewModel.openGenderPicker(signUpDetails.copy(gender = "Female")) }
         )
     }
 }

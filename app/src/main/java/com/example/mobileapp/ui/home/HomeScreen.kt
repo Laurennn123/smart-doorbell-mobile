@@ -1,8 +1,6 @@
 package com.example.mobileapp.ui.home
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -34,10 +32,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,12 +47,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.mobileapp.ESP32Notification
 import com.example.mobileapp.HomeScreenAppBar
 import com.example.mobileapp.R
-import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.AppViewModelProvider
 import com.example.mobileapp.ui.components.BottomNavigationBar
 import com.example.mobileapp.ui.components.SimpleButton
@@ -72,27 +67,22 @@ object HomeScreenDestination : NavigationDestination {
 
 @Composable
 fun HomeScreen(
-    context: Context,
-    fullName: String,
+    email: String,
     onClickSettings: () -> Unit,
     onClickAccount: () -> Unit,
-    homeViewModel: HomeScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     onClickBottomBar: (String) -> Unit,
     currentScreen: String,
+    homeViewModel: HomeScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier) {
 
-    LaunchedEffect(Unit) {
-        val esp32Service = Intent(context, ESP32Notification::class.java)
-        startForegroundService(context, esp32Service)
-    }
-
-    var userMessage by rememberSaveable { mutableStateOf("") }
+    val homeUiState by homeViewModel.homeUiState.collectAsState()
+    homeViewModel.setFullName(email = email)
 
     Scaffold(
         topBar = { HomeScreenAppBar(
             onClickAccount = onClickAccount,
             onClickSettings = onClickSettings,
-            nameOwner = fullName)
+            nameOwner = homeUiState.fullNameOfCurrentUser)
         },
         bottomBar = {
             BottomNavigationBar(
@@ -117,50 +107,27 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.Center,
                 modifier = modifier,
             ) {
-//                RecentNotification(
-//                    onClick = onClick,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .size(60.dp)
-//                )
                 LiveStream(modifier = Modifier
                     .fillMaxWidth()
                     .background(color = Color.Transparent, shape = MaterialTheme.shapes.medium)
                     .height(800.dp))
                 Actions(
-                    onClickAlarm = {
-//                        val index = homeViewModel.index
-//                        homeUiState.listOfRecentVisitors.add(
-//                            { VisitorCard("borils${index}", true,modifier = Modifier.padding(start = 10.dp)) }
-//                        )
-//                        homeViewModel.index++
-//                        loginViewModel.userStatusLogIn(isUserLogIn = !userStatusState.value.isUserLoggedIn)
-                        // to log out and reset the email session
-//                        loginViewModel.userStatusLogIn(isUserLogIn = false, userEmail = "")
-                        homeViewModel.sendMessageToESP32("~")
-                    },
+                    onClickAlarm = { homeViewModel.sendMessageToESP32("~") },
                     onClickUnlock = {
                         homeViewModel.doorClick()
                         homeViewModel.sendMessageToESP32("!")
                     },
-                    isUnlockDoorClick = homeViewModel.isUnlockDoorClicked
+                    isUnlockDoorClick = homeUiState.isUnlockDoorClicked
                 )
                 MessagePanel(
-                    messageValue = userMessage,
-                    userMessage = { userMessage = it },
-                    onClickClear = { userMessage = "" },
-                    onClickEnter = {
-                        homeViewModel.sendMessageToESP32(userMessage)
-                        userMessage = ""
-                    },
+                    messageValue = homeUiState.nameOfRegisteringForCard,
+                    userMessage = { homeViewModel.handleChange(it) },
+                    onClickClear = { homeViewModel.clearName() },
+                    onClickEnter = { homeViewModel.sendMessageToESP32(homeUiState.nameOfRegisteringForCard) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(color = Color(0xFF77C89D), shape = MaterialTheme.shapes.medium)
                 )
-//                RecentVisitors(
-//                    listOfUsers = homeUiState.listOfRecentVisitors,
-//                    modifier = Modifier.padding(vertical = 8.dp)
-//                )
             }
         }
     }

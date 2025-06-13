@@ -47,6 +47,7 @@ import com.example.mobileapp.ui.components.IconAppBar
 import com.example.mobileapp.ui.components.SimpleButton
 import com.example.mobileapp.ui.components.UserInput
 import com.example.mobileapp.ui.navigation.NavigationDestination
+import com.example.mobileapp.ui.sign_up.SignUpViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,6 +64,7 @@ fun LoginScreen(
     navigateToDialog: (String, String) -> Unit,
     onSignUpClick: () -> Unit,
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    signUpViewModel: SignUpViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val loginState by loginViewModel.loginUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -156,6 +158,7 @@ fun LoginScreen(
                             val isRegistered = loginViewModel.isEmailPassRegistered()
 
                             if (isRegistered) {
+                                signUpViewModel.addLocalDB(loginState.loginDetails.email)
                                 loginViewModel.userStatusLogIn(
                                     isUserLogIn = true,
                                     userEmail = loginState.loginDetails.email

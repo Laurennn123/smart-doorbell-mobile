@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import com.example.mobileapp.data.repo.AccountRepository
 import com.example.mobileapp.data.table.Account
@@ -14,17 +15,21 @@ import com.example.mobileapp.ui.UserHandler
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class SignUpViewModel(private val accountRepository: AccountRepository) : ViewModel(),
-    UserHandler<SignUpDetails> {
+class SignUpViewModel(private val accountRepository: AccountRepository) : ViewModel(), UserHandler<SignUpDetails> {
     companion object {
         @SuppressLint("StaticFieldLeak")
         private val database = Firebase.firestore
@@ -65,6 +70,42 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
         )}
     }
 
+    suspend fun updateSignUpDetails(email: String) {
+        val cloudDB = Firebase.firestore
+        withContext(Dispatchers.IO) {
+            cloudDB.collection("Account").document(email).get()
+                .addOnSuccessListener { data ->
+                    _signupUiState.update { currentState ->
+                        currentState.copy(
+                            signUpDetails = _signupUiState.value.signUpDetails.copy(
+                                fullName = data.get("Full Name").toString(),
+                                email = data.get("Email").toString(),
+                                password = data.get("Password").toString(),
+                                dateOfBirth = data.get("Birth Date").toString(),
+                                gender = data.get("Gender").toString()
+                            )
+                        )
+                    }
+                }.await()
+        }
+    }
+
+    fun clearStateSignUpDetails() {
+        _signupUiState.value = SignUpUiState()
+    }
+
+    suspend fun addLocalDB(email: String) {
+        val fullName = accountRepository.getName(email).firstOrNull()
+        if (fullName?.isBlank() != false) {
+            updateSignUpDetails(email)
+            accountRepository.createAccount(signUpUiState.value.signUpDetails.toAccount())
+        } else {
+            withContext(Dispatchers.Main) {
+                clearStateSignUpDetails()
+            }
+        }
+    }
+
     fun updateErrorMessage(message: String) {
         errorMessage = message
     }
@@ -86,7 +127,11 @@ class SignUpViewModel(private val accountRepository: AccountRepository) : ViewMo
             "Email" to signUpUiState.value.signUpDetails.email,
             "Password" to signUpUiState.value.signUpDetails.password,
             "Birth Date" to signUpUiState.value.signUpDetails.dateOfBirth,
-            "Gender" to signUpUiState.value.signUpDetails.gender
+            "Gender" to signUpUiState.value.signUpDetails.gender,
+            "Username" to signUpUiState.value.signUpDetails.userName,
+            "Address" to signUpUiState.value.signUpDetails.address,
+            "Contact Number" to signUpUiState.value.signUpDetails.contactNumber,
+            "Profile pic" to signUpUiState.value.signUpDetails.profilePic,
         )
         try {
             database.collection("Account").document(signUpUiState.value.signUpDetails.email).set(account).await()

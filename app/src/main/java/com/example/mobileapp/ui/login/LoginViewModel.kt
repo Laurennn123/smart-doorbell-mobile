@@ -4,17 +4,16 @@ import android.annotation.SuppressLint
 import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import com.example.mobileapp.data.repo.AccountRepository
 import com.example.mobileapp.data.repo.UserStatusRepository
 import com.example.mobileapp.ui.UserHandler
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -52,7 +51,6 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
 
     @OptIn(UnstableApi::class)
     suspend fun isEmailPassRegistered(): Boolean {
-        val tag = "authentication"
         auth = FirebaseAuth.getInstance()
         val email = _loginUiState.value.loginDetails.email
         val password = _loginUiState.value.loginDetails.password
@@ -61,27 +59,12 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     isSucess = true
-                    Log.d(tag, "success!")
                 }
             }.await()
         } catch (e: Exception) {
             _loginUiState.update { currentState -> currentState.copy(errorMessage = e.message.toString()) }
-            Log.d(tag, e.message.toString())
         }
         return isSucess
-    }
-
-    @OptIn(UnstableApi::class)
-    fun sendPasswordResetEmail(email: String): String {
-        val tag = "forgot"
-        var message = ""
-        try {
-            Firebase.auth.sendPasswordResetEmail(email)
-        } catch(e: Exception) {
-            Log.d(tag, e.message.toString())
-            message = e.message.toString()
-        }
-        return message
     }
 
     override fun handleChange(details: LoginUiDetails) {
@@ -99,6 +82,7 @@ class LoginViewModel(private val userStatusRepository: UserStatusRepository) : V
     fun logInClicked() {
         _loginUiState.update { currentState -> currentState.copy(isLogInClicked = !_loginUiState.value.isLogInClicked) }
     }
+
 }
 
 data class UserStatusState(

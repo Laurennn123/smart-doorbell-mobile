@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +52,6 @@ import com.example.mobileapp.ui.sign_up.SignUpScreen
 import com.example.mobileapp.ui.welcome.WelcomeDestination
 import com.example.mobileapp.ui.welcome.WelcomeScreen
 import com.example.mobileapp.data.DataSource.settings
-import com.example.mobileapp.model.HomeScreenModel
 import com.example.mobileapp.ui.SplashScreen
 import com.example.mobileapp.ui.SplashScreenDestination
 import com.example.mobileapp.ui.about_us.AboutUsScreen
@@ -65,8 +65,11 @@ import com.example.mobileapp.ui.account.MyAccountScreenDestination
 import com.example.mobileapp.ui.account.MyAccountViewModel
 import com.example.mobileapp.ui.forget_password.ForgetPasswordDestination
 import com.example.mobileapp.ui.forget_password.ForgetPasswordScreen
+import com.example.mobileapp.ui.forget_password.ForgetPasswordViewModel
+import com.example.mobileapp.ui.home.HomeScreenViewModel
 import com.example.mobileapp.ui.instructional_manual.InstructionalDestination
 import com.example.mobileapp.ui.instructional_manual.InstructionalManualScreen
+import com.example.mobileapp.ui.sign_up.SignUpViewModel
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
@@ -80,15 +83,15 @@ fun SmartDoorBellNavHost(
     context: Context,
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    homeViewModel: HomeScreenModel = viewModel(factory = AppViewModelProvider.Factory),
     loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    forgetViewModel: ForgetPasswordViewModel = viewModel(factory = AppViewModelProvider.Factory),
     myAccountViewModel: MyAccountViewModel = viewModel(factory = AppViewModelProvider.Factory)
     ) {
 
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     val userSession = loginViewModel.userSession.collectAsState()
-    val fullName by homeViewModel.fullName.collectAsState()
+    // fix this start at the birthDate
     val birthDate by myAccountViewModel.birthDateDb.collectAsState()
     val username by myAccountViewModel.userNameDb.collectAsState()
     val contactNumber by myAccountViewModel.contactNumberDb.collectAsState()
@@ -97,7 +100,6 @@ fun SmartDoorBellNavHost(
     val profilePic by myAccountViewModel.profilePicDb.collectAsState()
 
     var email by remember { mutableStateOf("") }
-    var settingsOptionSelect by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     var currentScreen by rememberSaveable { mutableStateOf("HomeScreen") }
 
@@ -139,6 +141,10 @@ fun SmartDoorBellNavHost(
                     .fillMaxSize()
                     .statusBarsPadding(),
                 navigateToHomeScreen = {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val esp32Service = Intent(context, ESP32Notification::class.java)
+                        startForegroundService(context, esp32Service)
+                    }
                     navController.navigate(route = HomeScreenDestination.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -152,6 +158,7 @@ fun SmartDoorBellNavHost(
                     email = emailInput
                 }
             )
+
             if (errorMessage.isNotBlank()) {
                 InvalidInputDialog(
                     message = errorMessage,
@@ -164,13 +171,15 @@ fun SmartDoorBellNavHost(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
         }
 
         composable(route = ForgetPasswordDestination.route) {
             var errorMessageForgot by remember { mutableStateOf("") }
+
             ForgetPasswordScreen(
                 onClickSend = {
-                    errorMessageForgot = loginViewModel.sendPasswordResetEmail(it)
+                    errorMessageForgot = forgetViewModel.sendPasswordReset(it)
                     if (errorMessageForgot.isEmpty()) {
                         errorMessageForgot = "Successfully Email Send"
                     }
@@ -181,6 +190,7 @@ fun SmartDoorBellNavHost(
                     .fillMaxSize()
                     .padding(start = 45.dp, bottom = 60.dp)
             )
+
             if (errorMessageForgot == "Successfully Email Send") {
                 SuccessMessageDialog(
                     message = "Successfully Email Send",
@@ -192,11 +202,10 @@ fun SmartDoorBellNavHost(
             } else if (errorMessageForgot == "Given String is empty or null" || errorMessageForgot == "The email address is badly formatted.") {
                 InvalidEmailDialog(
                     message = errorMessageForgot,
-                    onClickOk = {
-                        errorMessageForgot = ""
-                    }
+                    onClickOk = { errorMessageForgot = "" }
                 )
             }
+
         }
 
         composable(route = SignUpDestination.route) {
@@ -241,11 +250,8 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = HomeScreenDestination.route) {
-            homeViewModel.setFullName(email = auth.currentUser?.email.toString())
-            // create also a service on this that will get the ip address through firebase then pass the ip address
             HomeScreen(
-                fullName = fullName,
-                context = context,
+                email = auth.currentUser?.email.toString(),
                 onClickSettings = { navController.navigate(route = SettingScreenDestination.route) },
                 onClickAccount = { navController.navigate(route = MyAccountScreenDestination.route) },
                 onClickBottomBar = {
@@ -290,6 +296,8 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = SettingScreenDestination.route) {
+            var settingsOptionSelect by remember { mutableStateOf("") }
+
             SettingsScreen(
                 settings = settings,
                 onClick = { settingsOptionSelect = it },
@@ -372,7 +380,6 @@ fun SmartDoorBellNavHost(
         }
 
         composable(route = MyAccountScreenDestination.route) {
-            val coroutineScope = rememberCoroutineScope()
             myAccountViewModel.setEmail(email = userSession.value.userEmail)
             MyAccountScreen(
                 userName = username,
@@ -483,16 +490,16 @@ fun SmartDoorBellNavHost(
                             val newPassword = myAccountViewModel.myAccountUiState.password
                             val credential = EmailAuthProvider.getCredential(auth.currentUser?.email.toString(), password)
                             val user = auth.currentUser
-                            coroutineScope.launch {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 try {
                                     user?.reauthenticate(credential)?.await()
                                     user?.updatePassword(newPassword)
                                         ?.addOnCompleteListener { task ->
-                                        if (task.isSuccessful) {
-                                            val tag = "password"
-                                            Log.d(tag, "User password updated.")
-                                        }
-                                    }?.await()
+                                            if (task.isSuccessful) {
+                                                val tag = "password"
+                                                Log.d(tag, "User password updated.")
+                                            }
+                                        }?.await()
                                 } catch (e: Exception) {
                                     Log.d(tag, FirebaseAuth.getInstance().currentUser?.email.toString())
                                     Log.d(tag, e.message.toString())
